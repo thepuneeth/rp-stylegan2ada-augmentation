@@ -1,0 +1,59 @@
+{
+  "space": "pixel",
+  "leaky": true,
+  "seed": 42,
+  "n_train": 111,
+  "n_holdout": 28,
+  "snapshots": {
+    "synth_leak_psi1.0": {
+      "authenticity_raw": 1.0,
+      "n_inauthentic": 0,
+      "n_synth": 1110,
+      "matched_subset_size": 28,
+      "authenticity_matched": 1.0,
+      "authenticity_matched_ci95": [
+        1.0,
+        1.0
+      ],
+      "authenticity_null_real_holdout": 0.6428571428571429,
+      "authenticity_vs_null": 0.3571428571428571,
+      "below_null": false,
+      "ct": {
+        "n_synth": 1110,
+        "n_holdout": 28,
+        "n_train": 111,
+        "median_d_synth_to_train": 0.7086899280548096,
+        "median_d_holdout_to_train": 0.2637558579444885,
+        "Z_U_global": 8.9475803643003,
+        "C_T": 4.937709836338948,
+        "cells": [
+          {
+            "cell": 0,
+            "n_synth": 62,
+            "n_holdout": 12,
+            "Z_U": 5.455272678794342,
+            "tested": true
+          },
+          {
+            "cell": 1,
+            "n_synth": 1014,
+            "n_holdout": 7,
+            "Z_U": 4.564604740649092,
+            "tested": true
+          },
+          {
+            "cell": 2,
+            "n_synth": 34,
+            "n_holdout": 9,
+            "Z_U": 4.537818898601644,
+            "tested": true
+          }
+        ],
+        "n_cells": 3,
+        "min_cell": 5,
+        "holdout_mass_tested": 1.0
+      }
+    }
+  },
+  "interpretation_warning": "Generator trained on holdout images. Authenticity and C_T are contaminated by memorisation; upper bounds only."
+}

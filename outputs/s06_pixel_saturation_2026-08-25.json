@@ -1,0 +1,39 @@
+{
+  "space": "pixel",
+  "z_u_ceiling": 9.047722466243275,
+  "pools": {
+    "synth_clean_psi1.0": {
+      "Z": 8.946415921254452,
+      "pct": 98.88030888030889,
+      "CT": 5.024846560293679,
+      "dS": 0.7097082138061523,
+      "dH": 0.2637558579444885,
+      "auth": 1.0
+    },
+    "synth_clean_psi0.7": {
+      "Z": 8.95980701628171,
+      "pct": 99.02831402831403,
+      "CT": 5.058732056432102,
+      "dS": 0.716298520565033,
+      "dH": 0.2637558579444885,
+      "auth": 1.0
+    },
+    "synth_leak_psi1.0": {
+      "Z": 8.9475803643003,
+      "pct": 98.89317889317891,
+      "CT": 4.937709836338948,
+      "dS": 0.7086899280548096,
+      "dH": 0.2637558579444885,
+      "auth": 1.0
+    },
+    "synth_leak_psi0.7": {
+      "Z": 8.955149244098315,
+      "pct": 98.97683397683399,
+      "CT": 4.7855993233980465,
+      "dS": 0.7164416313171387,
+      "dH": 0.2637558579444885,
+      "auth": 1.0
+    }
+  },
+  "finding": "Z_U sits at 98.9% of its mathematical ceiling for all four pools: in raw pixel space essentially every synthetic image is farther from the training set than every holdout real is (median 0.71 vs 0.26, 2.7x). The statistic is SATURATED, not passing. g_leak trained on all 28 holdout eyes yet is indistinguishable from g_clean (Z differs by 0.001). Pixel space therefore has no sensitivity to memorisation here, which is empirical support for s06 raising rather than falling back to a substitute feature space. RETFound is required, not preferred."
+}

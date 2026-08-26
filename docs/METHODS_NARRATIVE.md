@@ -504,16 +504,107 @@ already measured and depends on none of the above.
 
 ---
 
+## Part C — Results obtained 2026-08-25
+
+Three findings were added on this date: a GPU session that put both generators
+on a common reference and completed the `g_clean` metric curves, and a
+pixel-space run of `s06` on the resulting pools. Numbers:
+`outputs/s08_pod_metrics_2026-08-25.json` and
+`outputs/s06_pixel_saturation_2026-08-25.json`.
+
+### C1. F1 resolves to a null, and the metrics disagree
+
+Each generator had only ever been scored against its own training archive, and
+those archives differ in 28 of 111 images. Both selected checkpoints were
+therefore rescored against the other arm's archive, yielding a complete 2 x 2.
+
+| reference | metric | `g_clean` (2822) | `g_leak` (3000) |
+|---|---|---|---|
+| `clean_111` | FID | 50.86 | 51.50 |
+| `clean_111` | KID | 0.018538 | 0.018364 |
+| `clean_111` | precision | 0.603 | 0.553 |
+| `leak_111` | FID | 52.02 | 50.42 |
+| `leak_111` | KID | 0.019484 | 0.018800 |
+| `leak_111` | precision | 0.516 | 0.494 |
+
+The three instruments do not agree on an ordering. FID places each generator
+ahead on its own reference; KID places `g_leak` ahead on both; precision places
+`g_clean` ahead on both. The separations, 1.7 x 10^-4 in KID and 0.64 in FID,
+fall inside what a 111-image reference resolves, and recall is uninformative
+throughout, every value corresponding to between three and six images.
+
+This is reported as a null. Contamination produced no detectable difference in
+distributional sample quality. It is not reported as equivalence, and no
+generator is described as better. The consequence for the study is substantive
+rather than presentational: the contamination contrast cannot rest on FID or
+KID, and must rest on `s06` and `s05`, which are the analyses capable of
+observing memorisation and downstream utility respectively.
+
+### C2. The instability at 806 kimg now has its control
+
+`g_clean` was scored with KID and precision/recall at 403, 806, 1209 and 1612
+kimg, where only FID had previously been computed.
+
+| kimg | `g_clean` KID | `g_leak` KID | `g_clean` precision | `g_leak` precision |
+|---|---|---|---|---|
+| 403 | 0.028187 | 0.027100 | 0.428 | 0.337 |
+| 806 | 0.024830 | 0.067300 | 0.474 | 0.0003 |
+| 1209 | 0.022725 | 0.023100 | 0.524 | 0.393 |
+
+At 806 kimg the contaminated arm degraded on all three metrics while the matched
+clean arm improved on all three. The runs differ only in the path to the
+training archive, 58 optimisation parameters being identical. The ADA
+augmentation probability in `g_leak` had fallen to 0.000 by 673 kimg and
+remained near zero until approximately 830, which is the proximate mechanism.
+`g_leak` recovered by 1209 kimg, so this is described as an instability episode
+rather than a failed run.
+
+`GAN_SEEDS = [0]`. One seed per arm supports a statement of co-occurrence and
+does not establish causation, and the limitation is stated wherever the episode
+is reported.
+
+### C3. Pixel space cannot see memorisation, and the reason is measurable
+
+`s06` was run in the pixel feature space on all four pools. The Mann-Whitney
+statistic has a mathematical ceiling of 9.0477 at these pool sizes, reached when
+every synthetic image is farther from the training set than every holdout real.
+
+| pool | Z_U | share of ceiling | C_T | authenticity |
+|---|---|---|---|---|
+| `synth_clean` psi 1.0 | 8.9464 | 98.9% | 5.02 | 1.000 |
+| `synth_clean` psi 0.7 | 8.9598 | 99.0% | 5.06 | 1.000 |
+| `synth_leak` psi 1.0 | 8.9476 | 98.9% | 4.94 | 1.000 |
+| `synth_leak` psi 0.7 | 8.9551 | 99.0% | 4.79 | 1.000 |
+
+All four sit at 99% of the ceiling; synthetic images are a median 2.7 times
+farther from the training reals than holdout reals are. The statistic is
+saturated rather than passing, and authenticity is likewise at its maximum of
+1.000 with zero inauthentic samples.
+
+The decisive observation is that `g_leak`, whose training archive contains all
+28 holdout eyes, is indistinguishable from `g_clean`, the two differing by 0.001
+in Z_U. A feature space in which a generator that has memorised the holdout
+scores identically to one that has never seen it has no sensitivity to the
+quantity being measured. This is empirical support for the decision that `s06`
+raises rather than substituting a feature space: the primary endpoint requires
+RETFound, and a pixel-space or Inception-space result would not be a weaker
+version of it but an uninformative one.
+
+---
+
 ## Immediate actions arising
 
 1. Restore the `synth_leak` arm to `config.ARMS` and reinstate contrast P2 in
-   `README.md` and `FINAL_PLAN.md` (**F5**).
-2. Correct the selection metric to KID in `README.md` and `FINAL_PLAN.md`
-   section 6 (**F7**), and the snapshot cadence to 400 kimg (**F6**).
-3. Decide **F1**: either rescore both selected checkpoints against a single
-   fixed reference set, or adopt the narrower phrasing given in B8.
+   `README.md` and `FINAL_PLAN.md` (**F5**). Outstanding; this decision gates
+   the `s05` sweep, which re-runs in full if the arm is added afterwards.
+2. ~~Correct the selection metric to KID~~ and ~~the snapshot cadence to 400
+   kimg~~ (**F6**, **F7**) — done 2026-08-25.
+3. ~~Decide **F1**~~ — resolved as a null, see C1. The narrower B8 phrasing is
+   adopted and no rescoring rental is required.
 4. Adopt BCa intervals or a permutation test in place of the percentile
-   bootstrap (**F9**).
-5. Correct the generator parameter count to 2.5 x 10^7 throughout.
+   bootstrap (**F9**). Outstanding.
+5. ~~Correct the generator parameter count to 2.5 x 10^7~~ — done in
+   `README.md` 2026-08-25; the comments in `config.py` still read 3e7 and are
+   held pending approval to edit that file.
 6. Obtain the RETFound checkpoint, which remains the sole blocker on the
-   primary endpoint.
+   primary endpoint, and which C3 shows cannot be worked around.

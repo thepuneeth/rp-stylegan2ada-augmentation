@@ -18,7 +18,7 @@ Every arm trains on the same 111 real RP images and is scored on the same 28
 |---|---|---|---|---|
 | **P1** | **`synth_clean` vs `oversample`** | what the generator adds *beyond rebalancing* | small or null | **confirmatory — the only one** |
 | S1 | `oversample` vs `real_only` | class balance alone | most of the prior gain | descriptive |
-| S2 | `pca_sampler` vs `synth_clean` | does a 22-direction linear subspace match ~3e7 weights? | — | descriptive |
+| S2 | `pca_sampler` vs `synth_clean` | does a 22-direction linear subspace match ~2.5e7 weights? | — | descriptive |
 
 **P1 is the primary contrast** — the direct form of "does the GAN beat
 oversampling", which the prior work never asked and a reviewer asks first.
@@ -65,7 +65,7 @@ on resampled reals) stays as an implementation self-test.
 | `real_only` | -- | floor |
 | **`oversample`** | minority duplicated to balance | class balance, zero new pixels |
 | `pca_sampler` | linear manifold samples (k=22, 4.5e6 stored floats) | cheap comparator, free, no GPU |
-| **`synth_clean`** | StyleGAN2-ADA (~3e7 params), ffhq256 -> 111 dev eyes | the generator as normally used |
+| **`synth_clean`** | StyleGAN2-ADA (~2.5e7 params), ffhq256 -> 111 dev eyes | the generator as normally used |
 
 Plus one historical row, **not an arm**: `legacy_v3`, the prior generator, which
 saw all 139 real RP including every evaluation eye. Labelled contaminated
@@ -116,8 +116,10 @@ as future work with the design written down.
 
 **s06 gates the GPU day.** Without a prespecified snapshot-selection criterion,
 14 GPU-hours produce ~15 `.pkl` snapshots with no principled way to choose one.
-Selection runs offline on downloaded snapshots: lowest FID among snapshots
->= `SELECT_MIN_KIMG`, ties to the earlier snapshot.
+Selection runs offline on downloaded snapshots: lowest **KID**
+(`config.SELECT_METRIC = kid50k_full`) among snapshots >= `SELECT_MIN_KIMG`,
+ties to the earlier snapshot. KID rather than FID because FID's bias grows as
+the reference set shrinks and this one is 111 images.
 
 ### Baseline — legacy v3 generator, size-matched, measured in Inception space
 

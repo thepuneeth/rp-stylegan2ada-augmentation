@@ -211,12 +211,17 @@ Fixed before results are seen.
 
 The prior project's best snapshot was not its last. So:
 
-1. `--snap` writes a snapshot every **200 kimg** (`--snap=50` ticks).
+1. `--snap` writes a snapshot every **~400 kimg** (`--snap=50` ticks). The
+   as-run cadence was 403 kimg, giving 9 snapshots over 3,000 kimg, not the
+   15 an even 200 kimg would have produced.
 2. All snapshots are downloaded and verified to load **locally**.
 3. Selection runs offline on the local machine, on the saved snapshots — no GPU
    time, no results-driven stopping.
-4. Selection criterion: lowest FID among snapshots ≥ 2,000 kimg. Ties break to
-   the earlier snapshot.
+4. Selection criterion: lowest **KID** (`kid50k_full`, `config.SELECT_METRIC`)
+   among snapshots ≥ 2,000 kimg (`config.SELECT_MIN_KIMG`). Ties break to the
+   earlier snapshot. KID, not FID: FID is a biased estimator whose bias grows
+   as the reference set shrinks, and this reference set is 111 images. KID is
+   the unbiased small-sample estimator, so it is the defensible choice here.
 
 ### Surplus rule — prespecified
 
