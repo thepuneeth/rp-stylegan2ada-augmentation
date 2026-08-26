@@ -140,7 +140,11 @@ def colour_moments(paths):
 #   synthetic     legacy v3 pool -- contaminated, saw every holdout eye
 #   synth_clean   this study's generator, trained on the 111 dev eyes only
 #   pca_sampler   linear-manifold samples, ~1e4 params, no GPU
-POOL_ARMS = ("synthetic", "synth_clean", "pca_sampler")
+#   synth_leak    the size-matched CONTAMINATED generator (trained on the 111
+#                 dev eyes with 28 of them swapped for holdout eyes). Routed
+#                 here so the arm is available, but it is NOT in config.ARMS:
+#                 enable it per run with --arms ... synth_leak --synth-leak-dir.
+POOL_ARMS = ("synthetic", "synth_clean", "synth_leak", "pca_sampler")
 
 # Arms that add nothing and differ only in loss / sampling of the reals.
 PLAIN_ARMS = ("real_only", "imbalanced", "oversample", "weighted", "focal")
@@ -273,6 +277,8 @@ def main():
                     help="pool for the legacy 'synthetic' arm")
     ap.add_argument("--synth-clean-dir", default=None,
                     help="pool for 'synth_clean' (generate.py output)")
+    ap.add_argument("--synth-leak-dir", default=None,
+                    help="pool for 'synth_leak' (the contaminated generator)")
     ap.add_argument("--pca-dir", default=None,
                     help="pool for 'pca_sampler' (s04b output)")
     ap.add_argument("--tag", default="legacy_v3")
@@ -309,6 +315,7 @@ def main():
     # rather than silently degrading to real_only.
     pools = {"synthetic": load_pool(a.synth_dir),
              "synth_clean": load_pool(a.synth_clean_dir),
+             "synth_leak": load_pool(a.synth_leak_dir),
              "pca_sampler": load_pool(a.pca_dir)}
     doses = a.doses if a.doses is not None else C.DOSE_LEVELS
     arms = a.arms if a.arms is not None else C.ARMS
