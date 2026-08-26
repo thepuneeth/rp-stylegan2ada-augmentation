@@ -1,0 +1,18 @@
+{
+  "clean_111": {
+    "n": 111,
+    "eyes": 106,
+    "contains_holdout": false
+  },
+  "leak_111": {
+    "n": 111,
+    "n_holdout_included": 28,
+    "n_dev_filler": 83,
+    "contains_holdout": true
+  },
+  "pretrain_fundus": {
+    "n": 817,
+    "source": "DEV healthy only",
+    "contains_holdout": false
+  }
+}

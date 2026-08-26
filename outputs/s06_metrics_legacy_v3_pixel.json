@@ -1,0 +1,59 @@
+{
+  "space": "pixel",
+  "leaky": true,
+  "seed": 42,
+  "n_train": 111,
+  "n_holdout": 28,
+  "snapshots": {
+    "generated_rp_images_0007_201_trunc_6": {
+      "authenticity_raw": 0.984180790960452,
+      "n_inauthentic": 14,
+      "n_synth": 885,
+      "matched_subset_size": 28,
+      "authenticity_matched": 0.9823214285714285,
+      "authenticity_matched_ci95": [
+        0.9285714285714286,
+        1.0
+      ],
+      "authenticity_null_real_holdout": 0.6428571428571429,
+      "authenticity_vs_null": 0.33946428571428555,
+      "below_null": false,
+      "ct": {
+        "n_synth": 885,
+        "n_holdout": 28,
+        "n_train": 111,
+        "median_d_synth_to_train": 0.5919573903083801,
+        "median_d_holdout_to_train": 0.2637558579444885,
+        "Z_U_global": 7.471810139653206,
+        "C_T": 3.8046529584914315,
+        "cells": [
+          {
+            "cell": 0,
+            "n_synth": 110,
+            "n_holdout": 12,
+            "Z_U": 4.479080058118655,
+            "tested": true
+          },
+          {
+            "cell": 1,
+            "n_synth": 674,
+            "n_holdout": 7,
+            "Z_U": 4.097932938195317,
+            "tested": true
+          },
+          {
+            "cell": 2,
+            "n_synth": 101,
+            "n_holdout": 9,
+            "Z_U": 2.6773101747743326,
+            "tested": true
+          }
+        ],
+        "n_cells": 3,
+        "min_cell": 5,
+        "holdout_mass_tested": 1.0
+      }
+    }
+  },
+  "interpretation_warning": "Generator trained on holdout images. Authenticity and C_T are contaminated by memorisation; upper bounds only."
+}

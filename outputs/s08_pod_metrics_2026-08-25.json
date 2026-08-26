@@ -1,0 +1,82 @@
+{
+  "generated": "2026-08-25",
+  "note": "Pod inference session 3, RTX 4090. Adds (a) the F1 cross-score putting both selected checkpoints on a common reference, and (b) kid/pr backfill for g_clean at kimg 403-1612 where only fid existed. Diagonal entries are copied from the in-training metric jsonl, not recomputed.",
+  "mirror": true,
+  "num_gen": 50000,
+  "cross_score_f1": {
+    "clean-002822": {
+      "vs_clean_111_own": {
+        "fid50k_full": 50.8569710475279,
+        "kid50k_full": 0.01853766106069088,
+        "precision": 0.6026399731636047,
+        "recall": 0.027027027681469917
+      },
+      "vs_leak_111_cross": {
+        "fid50k_full": 52.01581785257382,
+        "kid50k_full": 0.01948370784521103,
+        "precision": 0.5161200165748596,
+        "recall": 0.054054055362939835
+      }
+    },
+    "leak-003000": {
+      "vs_clean_111_cross": {
+        "fid50k_full": 51.500198930779284,
+        "kid50k_full": 0.018363870680332184,
+        "precision": 0.5532400012016296,
+        "recall": 0.027027027681469917
+      },
+      "vs_leak_111_own": {
+        "fid50k_full": 50.41954054938163,
+        "kid50k_full": 0.018843388184905052,
+        "precision": 0.4936800003051758,
+        "recall": 0.036036036908626556
+      }
+    },
+    "reading": "The three metrics do not agree on an ordering. fid: each generator is best on its own reference. kid: g_leak lower on BOTH references. precision: g_clean higher on BOTH references. Margins (2e-4 kid, 0.64 fid) are inside what a 111-image reference resolves. Conclusion: contamination produced no detectable difference in distributional sample quality; the generators cannot be ordered."
+  },
+  "backfill_g_clean_vs_clean_111": {
+    "403": {
+      "kid50k_full": 0.0281872246414423,
+      "precision": 0.4278999865055084,
+      "recall": 0.036036036908626556
+    },
+    "806": {
+      "kid50k_full": 0.024829626083374023,
+      "precision": 0.4735200107097626,
+      "recall": 0.054054055362939835
+    },
+    "1209": {
+      "kid50k_full": 0.022725317627191544,
+      "precision": 0.5239800214767456,
+      "recall": 0.027027027681469917
+    },
+    "1612": {
+      "kid50k_full": 0.02083561383187771,
+      "precision": 0.5520200133323669,
+      "recall": 0.036036036908626556
+    }
+  },
+  "f3_control": {
+    "claim": "At kimg 806 the contaminated arm collapsed (precision 0.337->0.0003, kid 0.0271->0.0673, fid 61.79->92.77) while the matched clean arm improved on all three (precision 0.428->0.474, kid 0.0282->0.0248, fid 62.06->58.40). The runs differ only in --data. g_leak recovered by kimg 1209: an instability episode, not a failed run.",
+    "caveat": "GAN_SEEDS=[0]. One seed per arm, so this is co-occurrence, not established causation."
+  },
+  "pools": {
+    "seeds": "0-1109",
+    "n": 1110,
+    "noise_mode": "const",
+    "size": [
+      256,
+      256
+    ],
+    "dirs": [
+      "gan_data/synth_clean_psi1.0",
+      "gan_data/synth_clean_psi0.7",
+      "gan_data/synth_leak_psi1.0",
+      "gan_data/synth_leak_psi0.7"
+    ],
+    "sources": {
+      "synth_clean": "runs/g_clean/network-snapshot-002822.pkl",
+      "synth_leak": "runs/g_leak/network-snapshot-003000.pkl"
+    }
+  }
+}

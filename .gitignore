@@ -1,0 +1,31 @@
+# ---------------------------------------------------------------- derived data
+# Regenerate with s04_prepare_gan_data.py. ~200 MB of zips plus ~5,500 PNGs.
+gan_data/
+outputs/*.png
+
+# ------------------------------------------------------------ run artifacts
+# ~5.7 GB of network snapshots. Regenerating them costs GPU rental, so they are
+# kept on disk but must never enter git history.
+runs/
+
+# ------------------------------------------------------- imported source data
+# Copied from pigmentGAN on 2026-08-25 so this study is self-contained on disk.
+# Tracked NOWHERE -- these are inputs, not products, and they are large.
+Eye Disease Image Dataset/
+BalancedDataset/
+generated_rp_images_0007_201_trunc_6/
+
+# Vendored StyleGAN2-ADA (NVlabs, with the local torch 2.x gradfix port).
+stylegan2-ada-pytorch-main/
+
+# venv is a symlink to ../pigmentGAN/venv
+venv
+
+# Pod session logs are provenance and ARE committed; the tarball inside is not.
+provenance/**/logs.tgz
+
+# ------------------------------------------------------ editor and OS noise
+__pycache__/
+*.pyc
+.DS_Store
+*.swp

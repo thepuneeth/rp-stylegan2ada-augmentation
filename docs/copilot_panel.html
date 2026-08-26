@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>pigmentGAN — research copilot</title>
+<style>
+:root{
+  --bg:#0d1117; --panel:#161b22; --line:#26303d; --ink:#e6edf3; --dim:#8b949e;
+  --accent:#58a6ff; --good:#3fb950; --warn:#d29922; --bad:#f85149; --purple:#bc8cff;
+  --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:14px/1.5 ui-sans-serif,-apple-system,"SF Pro Text",Segoe UI,sans-serif}
+a{color:var(--accent)}
+code,.mono{font-family:var(--mono);font-size:12px}
+header{padding:18px 24px;border-bottom:1px solid var(--line);display:flex;
+  align-items:baseline;gap:18px;flex-wrap:wrap;position:sticky;top:0;background:var(--bg);z-index:10}
+h1{font-size:17px;margin:0;font-weight:600;letter-spacing:-.01em}
+h1 span{color:var(--dim);font-weight:400}
+main{max-width:1400px;margin:0 auto;padding:20px 24px 80px;
+  display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+section{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+.c12{grid-column:span 12}.c8{grid-column:span 8}.c7{grid-column:span 7}
+.c6{grid-column:span 6}.c5{grid-column:span 5}.c4{grid-column:span 4}
+@media(max-width:1000px){.c8,.c7,.c6,.c5,.c4{grid-column:span 12}}
+h2{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--dim);
+  margin:0 0 12px;font-weight:600}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;color:var(--dim);font-weight:500;font-size:11px;
+  text-transform:uppercase;letter-spacing:.05em;padding:0 8px 7px 0;border-bottom:1px solid var(--line)}
+td{padding:7px 8px 7px 0;border-bottom:1px solid #1c232c;vertical-align:top}
+tr:last-child td{border-bottom:none}
+.num{font-family:var(--mono);text-align:right;white-space:nowrap}
+.lead{color:var(--dim);font-size:12.5px;margin:0 0 12px}
+.foot{color:var(--dim);font-size:12.5px;margin:12px 0 0}
+ul{margin:0;padding-left:18px}li{margin-bottom:6px}
+.kill{color:var(--dim);text-decoration:line-through}
+.tag{display:inline-block;font-size:10.5px;font-family:var(--mono);padding:1.5px 6px;
+  border-radius:4px;border:1px solid;letter-spacing:.03em;white-space:nowrap}
+.t-good{color:var(--good);border-color:#238636}
+.t-warn{color:var(--warn);border-color:#9e6a03}
+.t-bad{color:var(--bad);border-color:#8b2c28}
+.t-dim{color:var(--dim);border-color:var(--line)}
+.t-acc{color:var(--accent);border-color:#1f6feb}
+.flow{display:flex;align-items:center;gap:9px;flex-wrap:wrap;font-family:var(--mono);font-size:12px}
+.node{background:#1c232c;border:1px solid var(--line);border-radius:7px;padding:7px 11px;white-space:nowrap}
+.node b{color:var(--accent);font-weight:600}
+.node.gpu{border-color:#9e6a03}
+.node.blind{border-color:#238636}
+.arr{color:var(--dim)}
+.bar{height:24px;border-radius:6px;overflow:hidden;display:flex;background:#1c232c;
+  margin:4px 0 10px;border:1px solid var(--line)}
+.bar span{display:flex;align-items:center;justify-content:center;font-size:10.5px;
+  font-family:var(--mono);color:#0d1117;font-weight:700;overflow:hidden}
+label.task{display:flex;gap:9px;align-items:flex-start;padding:6px 0;
+  border-bottom:1px solid #1c232c;cursor:pointer;font-size:13px}
+label.task:last-child{border-bottom:none}
+label.task input{margin-top:3px;accent-color:var(--good);flex:none}
+label.task .s{color:var(--dim);font-size:11.5px;font-family:var(--mono);display:block}
+label.task.done .t{color:var(--dim);text-decoration:line-through}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>pigmentGAN <span>— IEEE BIBM 2026 UGHS · 6 pages · single-blind</span></h1>
+  <span class="tag t-acc">one generator</span>
+  <span class="tag t-warn">≤20 GPU-hours</span>
+</header>
+
+<main>
+
+<section class="c12">
+  <h2>Pipeline</h2>
+  <div class="flow">
+    <div class="node">139 real RP<br><b>134 unique eyes</b></div><span class="arr">›</span>
+    <div class="node">eye-disjoint split<br><b>20/20 invariants</b></div><span class="arr">›</span>
+    <div class="node">111 dev eyes</div><span class="arr">›</span>
+    <div class="node gpu">g_clean · ffhq256<br><b>3,000 kimg · 18.8 h</b></div><span class="arr">›</span>
+    <div class="node">ψ 0.7 / 1.0<br>1,500 each</div><span class="arr">›</span>
+    <div class="node">4 arms · RETFound<br>Alaa + Meehan</div><span class="arr">›</span>
+    <div class="node blind">28 blind eyes<br>197 healthy eyes</div>
+  </div>
+</section>
+
+<section class="c7">
+  <h2>What the logs actually say</h2>
+  <p class="lead">Every budget number on this page comes from <code>training-runs/*/stats.jsonl</code>. None is an online estimate.</p>
+  <table>
+    <tr><th>run</th><th>config</th><th class="num">kimg</th><th class="num">s/kimg</th><th class="num">hours</th></tr>
+    <tr><td class="mono">00004</td><td>resume ffhq256, γ5, target .6, freezed 0</td><td class="num">290</td><td class="num">21.7</td><td class="num">1.80</td></tr>
+    <tr><td class="mono">00005</td><td>continue, γ5</td><td class="num">2,750</td><td class="num">21.7</td><td class="num">16.92</td></tr>
+    <tr><td class="mono">00006</td><td>γ3, target .35, <b>freezed 4</b></td><td class="num">770</td><td class="num">28.8</td><td class="num">6.29</td></tr>
+    <tr><td class="mono">00007</td><td>γ4, target .25, <b>freezed 5</b></td><td class="num">484</td><td class="num">27.8</td><td class="num">3.79</td></tr>
+    <tr><td colspan="2"><b>total</b></td><td class="num"><b>4,294</b></td><td class="num">24.1</td><td class="num"><b>28.80</b></td></tr>
+  </table>
+  <p class="foot">
+    <b>00004 + 00005 = 3,040 kimg in 18.72 h</b> — the &lt;20 GPU-hours this project remembers.
+    The <code>freezed</code> tail cost 10.08 h for only 1,254 kimg. Metric overhead across all four
+    runs is 0.59 h and the total-vs-ticks gap is zero, so 28.8 h is pure training. <b>Phase-1 recipe only.</b>
+  </p>
+</section>
+
+<section class="c5">
+  <h2>FID50k_full · by cumulative kimg</h2>
+  <table>
+    <tr><th>cum kimg</th><th class="num">FID</th><th></th></tr>
+    <tr><td class="mono">1,983</td><td class="num">49.58</td><td><span class="tag t-dim">earliest ever measured</span></td></tr>
+    <tr><td class="mono">3,031</td><td class="num">46.85</td><td><span class="tag t-acc">this plan's target</span></td></tr>
+    <tr><td class="mono">3,765</td><td class="num">41.98</td><td></td></tr>
+    <tr><td class="mono">3,806</td><td class="num"><b>41.69</b></td><td><span class="tag t-good">best</span></td></tr>
+    <tr><td class="mono">4,293</td><td class="num">43.01</td><td><span class="tag t-bad">worse</span></td></tr>
+  </table>
+  <p class="foot">
+    Best snapshot was <b>not</b> the last — a fixed-kimg endpoint would sometimes hand over the worse
+    generator. Hence offline selection. FID computed against 139 reals: a within-run trend, never an
+    absolute number.
+  </p>
+</section>
+
+<section class="c6">
+  <h2>Arms</h2>
+  <table>
+    <tr><th></th><th>arm</th><th>training-set addition</th><th class="num">GPU</th></tr>
+    <tr><td><b>A</b></td><td class="mono">real_only</td><td>—</td><td class="num">0</td></tr>
+    <tr><td><b>B</b></td><td class="mono">oversample</td><td>minority duplicated to balance</td><td class="num">0</td></tr>
+    <tr><td><b>D</b></td><td class="mono">pca_sampler</td><td>linear manifold, ~1e4 params</td><td class="num">0</td></tr>
+    <tr><td><b>C</b></td><td class="mono"><b>synth_clean</b></td><td>the one new run, ~3e7 params</td><td class="num"><b>18.8 h</b></td></tr>
+    <tr><td></td><td class="mono">legacy_v3</td><td><span class="tag t-bad">contaminated</span> historical row, not an arm</td><td class="num">0</td></tr>
+  </table>
+  <p class="foot">Same 111 real RP into every arm. Same 28 generator-blind eyes out.</p>
+</section>
+
+<section class="c6">
+  <h2>Prespecified contrasts</h2>
+  <table>
+    <tr><th>#</th><th>contrast</th><th>isolates</th><th>prior expectation</th></tr>
+    <tr><td><b>P1</b></td><td class="mono"><b>C vs B</b></td><td>what the generator adds beyond rebalancing</td><td><span class="tag t-warn">small / null</span></td></tr>
+    <tr><td>S1</td><td class="mono">B vs A</td><td>class balance alone</td><td><span class="tag t-dim">most of prior gain</span></td></tr>
+    <tr><td>S2</td><td class="mono">D vs C</td><td>does 1e4 params match 3e7</td><td><span class="tag t-dim">D close to C</span></td></tr>
+  </table>
+  <p class="foot">
+    <b>P1 is the only confirmatory test</b> — the direct version of "does the GAN beat oversampling",
+    the question the prior work never asked. S1 and S2 are descriptive, unadjusted, labelled as such.
+    Equivalence requires the 95% CI inside ±δ, δ fixed from B-vs-B spread <i>before</i> any C result is
+    read. Non-significance is not equivalence; <b>inconclusive</b> is an admissible outcome.
+  </p>
+</section>
+
+<section class="c6">
+  <h2>GPU budget · ceiling 20 h</h2>
+  <div class="bar">
+    <span style="width:90.5%;background:#1f6feb">training · 3,000 kimg · 18.1 h</span>
+    <span style="width:2.5%;background:#9e6a03"></span>
+    <span style="width:7%;background:#26303d;color:#8b949e">slack</span>
+  </div>
+  <table>
+    <tr><th>item</th><th class="num">hours</th></tr>
+    <tr><td>3,000 kimg @ 21.7 s/kimg</td><td class="num">18.1</td></tr>
+    <tr><td>4 × <code>fid50k_full</code>, after training</td><td class="num">0.5</td></tr>
+    <tr><td>sampling ψ 0.7 / 1.0</td><td class="num">&lt;0.1</td></tr>
+    <tr><td><b>total</b></td><td class="num"><b>≈18.7</b></td></tr>
+  </table>
+  <p class="foot">
+    A5000 community ≈$0.27/h → <b>under $10 for the whole study.</b> Cost is not the constraint, hours
+    are. <code>--metrics=none</code> during training: 15 inline FIDs would eat 1.7 h of the ceiling.
+    Expected FID ≈47, the measured value at 3,031 kimg on this recipe.
+  </p>
+</section>
+
+<section class="c6">
+  <h2>Prespecified rules · each costs nothing</h2>
+  <ul>
+    <li><b>Snapshot</b> every 200 kimg (<code>--snap=50</code>) — 15 total, all synced and verified locally.</li>
+    <li><b>Selection</b> runs offline: lowest FID among snapshots ≥ 2,000 kimg, ties to the earlier one.</li>
+    <li><b>Surplus rule</b> — if the first tick beats 21.7 s/kimg, raise <code>--kimg</code> on the
+      <i>same</i> generator, capped at <b>3,800</b>. Decided from throughput, never from an FID.</li>
+    <li><b>Fifteen-minute gate</b> — ops fail to build or &gt;30 s/kimg → kill the pod (~$0.07), fall back to A5000.</li>
+    <li><b>No mid-run intervention.</b> ADA climbing toward 1.0 gets recorded in the audit log, not fixed.</li>
+    <li><b>Integrity</b> — 110 prior snapshots were silently truncated and unrecoverable. Sync continuously;
+      md5-match locally <i>before</i> terminating the pod.</li>
+  </ul>
+</section>
+
+<section class="c6">
+  <h2>Cut from the 9,000-kimg plan</h2>
+  <table>
+    <tr><th>dropped</th><th>why</th></tr>
+    <tr><td class="kill">stage-2 fundus corpus</td><td>not what was achieved — v3 went ffhq256 → RP directly. Deletes the 4,972-image download and the contamination-audit section</td></tr>
+    <tr><td class="kill">arm E synth_scratch</td><td>random init on 111 images at 256px produces noise at any reachable budget</td></tr>
+    <tr><td class="kill">train.py:313-315 patch</td><td>only mattered because E didn't resume while F did. Both remaining runs resume, so the shift cancels</td></tr>
+    <tr><td class="kill">arm F_leak</td><td>needs a second matched generator. <code>leak_111.zip</code> is built and kept for the follow-up</td></tr>
+    <tr><td class="kill">3 generator seeds</td><td>n=1, with a scoped claim and a stated limitation instead</td></tr>
+    <tr><td class="kill">scarcity sweep · NCG</td><td>28 blind eyes cannot resolve a curve; NCG to the appendix</td></tr>
+  </table>
+</section>
+
+<section class="c6">
+  <h2>Leakage · already measured, zero GPU</h2>
+  <p class="lead">
+    v3's inflation came from <b>evaluation-protocol leakage</b>: synthetic images were merged into the
+    dataset <i>before</i> the 5-fold split, so ~177 of ~205 validation positives per fold were synthetic,
+    from a generator trained on the real positives.
+  </p>
+  <ul>
+    <li><span class="tag t-good">measured</span> Remove synthetic from the validation folds and rerun →
+      synthetic ≈ oversampling.
+      <code>corrected_experiments/outputs/corrected_cv_summary.json</code></li>
+    <li><span class="tag t-warn">future work</span> <b>Generator-mediated</b> leakage — training the
+      generator itself on the holdout eyes — is a separate mechanism and is <b>not</b> measured here.
+      Design written down (28 holdout + 83 dev, N matched at 111) so the follow-up is one command.</li>
+  </ul>
+</section>
+
+<section class="c6">
+  <h2>Attack surface</h2>
+  <ul>
+    <li><b>Colour shortcut.</b> Six global moments reach AUC 0.9501 image-level / 0.9561 eye-level.
+      Reported first, as a control — a reviewer raising it cites our own result back to us.</li>
+    <li><b>n=1 generator.</b> Cannot separate a real effect from a favourable init or trajectory.
+      Claim scoped to "for a generator trained under the published protocol."</li>
+    <li><b>Holdout reused</b> — generator-blind, but used to quantify the shortcut. Downstream inference
+      is exploratory.</li>
+    <li><b>No patient IDs.</b> Splits are eye-disjoint, not patient-disjoint; contralateral eyes may cross.</li>
+    <li><b>No reference standard</b> for the 139 RP labels. Inherited from the source dataset.</li>
+    <li><b>Single dataset, single disease.</b> Source publication reports two Topcon models and two
+      original resolutions — not even "same camera" is safe to assert.</li>
+    <li><b>v3's FID 40.97 appears in no log.</b> Closest logged value is 41.69 at ~3,806 cum kimg.</li>
+  </ul>
+</section>
+
+<section class="c12">
+  <h2>Worklist</h2>
+  <div id="tasks"></div>
+</section>
+
+<section class="c12">
+  <h2>Documents</h2>
+  <table>
+    <tr><th>file</th><th>holds</th></tr>
+    <tr><td><a href="FINAL_PLAN.md">FINAL_PLAN.md</a></td><td>this design in full — logs, budget, contrasts, decision rules</td></tr>
+    <tr><td><a href="RUNPOD_RECIPE.md">RUNPOD_RECIPE.md</a></td><td>the one GPU day: gate, commands, integrity checks, selection</td></tr>
+    <tr><td><a href="AUDIT_LOG.md">AUDIT_LOG.md</a></td><td>every check run, every failure, every withdrawn claim, with cause</td></tr>
+    <tr><td><a href="DEFENSE_AGENT_BRIEF.md">DEFENSE_AGENT_BRIEF.md</a></td><td>what to defend, what to concede flatly, what is withdrawn</td></tr>
+    <tr><td><a href="../config.py">config.py</a></td><td>every constant, justified inline at its definition</td></tr>
+    <tr><td><a href="PRETRAIN_CORPUS.md">PRETRAIN_CORPUS.md</a></td><td>licensing / data ethics <span class="tag t-dim">corpus now unused</span></td></tr>
+  </table>
+</section>
+
+</main>
+
+<script>
+// [task, done-when, pre-ticked]
+const tasks = [
+  ["Eye-disjoint split + 20 invariants", "s00_verify.py passes", 1],
+  ["Build clean_111.zip", "gan_data/clean_111.zip md5 afebeee3", 1],
+  ["Corrected real-only CV (the leakage result)", "corrected_cv_summary.json", 1],
+  ["Colour-shortcut control, image + eye level", "AUC 0.9501 / 0.9561 recorded", 1],
+  ["Implement arms A / B / D in s05_classifier.py", "4 arms route off config.ARMS", 0],
+  ["s05_classifier.py consumes dev_folds.json", "no ad-hoc splitting left in the script", 0],
+  ["Eye-level evaluator + cluster bootstrap", "207 files collapse to 197 healthy eyes", 0],
+  ["RETFound embedding + 2 sanity checks", "dup pairs mutual NN; RP separates from non-RP", 0],
+  ["Alaa a-precision / b-recall / authenticity", "runs on legacy pool BEFORE any GPU spend", 0],
+  ["Meehan C_T three-sample test", "runs on legacy pool BEFORE any GPU spend", 0],
+  ["Power simulation script", "regenerates the CI [0.9204, 0.9850]", 0],
+  ["Confirm UGHS eligibility", "student first author + in-person Dallas", 0],
+  ["THE GPU DAY — approval, gate, 3,000 kimg", "15 snapshots synced and md5-matched locally", 0],
+  ["Select snapshot offline", "lowest FID among snapshots >= 2,000 kimg", 0],
+  ["Generate psi 0.7 / 1.0, 1,500 each", "gen/clean_psi*/ complete, pod terminated", 0],
+  ["All arms + metrics", "P1 / S1 / S2 tables", 0],
+  ["Figures, then write", "6 pages incl. references", 0],
+];
+
+const box = document.getElementById("tasks");
+tasks.forEach(([t, s, d], i) => {
+  const key = "pg2_task_" + i;
+  const on = localStorage.getItem(key) ?? (d ? "1" : "0");
+  const l = document.createElement("label");
+  l.className = "task" + (on === "1" ? " done" : "");
+  l.innerHTML = `<input type="checkbox" ${on === "1" ? "checked" : ""}>
+                 <span><span class="t"></span><span class="s"></span></span>`;
+  l.querySelector(".t").textContent = t;
+  l.querySelector(".s").textContent = s;
+  l.querySelector("input").onchange = e => {
+    localStorage.setItem(key, e.target.checked ? "1" : "0");
+    l.classList.toggle("done", e.target.checked);
+  };
+  box.appendChild(l);
+});
+</script>
+</body>
+</html>

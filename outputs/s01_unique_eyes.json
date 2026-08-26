@@ -1,0 +1,121 @@
+{
+  "seed": 42,
+  "corr_size": 256,
+  "threshold": 0.99,
+  "linkage": "complete",
+  "feature": "fov_crop_gray_zeromean_unitnorm",
+  "sweep": {
+    "RP": {
+      "0.995": {
+        "n_unique": 135,
+        "largest_cluster": 2,
+        "multi_image_eyes": 4
+      },
+      "0.99": {
+        "n_unique": 134,
+        "largest_cluster": 2,
+        "multi_image_eyes": 5
+      },
+      "0.985": {
+        "n_unique": 131,
+        "largest_cluster": 2,
+        "multi_image_eyes": 8
+      },
+      "0.98": {
+        "n_unique": 124,
+        "largest_cluster": 3,
+        "multi_image_eyes": 13
+      }
+    },
+    "Healthy": {
+      "0.995": {
+        "n_unique": 989,
+        "largest_cluster": 2,
+        "multi_image_eyes": 35
+      },
+      "0.99": {
+        "n_unique": 963,
+        "largest_cluster": 4,
+        "multi_image_eyes": 56
+      },
+      "0.985": {
+        "n_unique": 831,
+        "largest_cluster": 7,
+        "multi_image_eyes": 128
+      },
+      "0.98": {
+        "n_unique": 610,
+        "largest_cluster": 12,
+        "multi_image_eyes": 197
+      }
+    }
+  },
+  "source_consistency": {
+    "checked": true,
+    "n_original": 139,
+    "n_balanced_real": 139,
+    "identical_filenames": true,
+    "only_in_original": [],
+    "only_in_balanced": []
+  },
+  "known_pair_recall": [
+    {
+      "pair": "RP5~RP7",
+      "similarity": 0.9988756497993605,
+      "same_eye": true
+    },
+    {
+      "pair": "RP4~RP6",
+      "similarity": 0.9988206268002237,
+      "same_eye": true
+    },
+    {
+      "pair": "RP1~RP3",
+      "similarity": 0.999439742140392,
+      "same_eye": true
+    },
+    {
+      "pair": "RP17~RP18",
+      "similarity": 0.9986261535524056,
+      "same_eye": true
+    },
+    {
+      "pair": "RP113~RP114",
+      "similarity": 0.9904554595467405,
+      "same_eye": true
+    }
+  ],
+  "RP": {
+    "n_files": 139,
+    "n_unique": 134,
+    "singletons": 129,
+    "multi_image_eyes": 5,
+    "largest_cluster": 2,
+    "median_corr": 0.8760069973379035,
+    "p999_corr": 0.9854522240929202,
+    "max_corr": 0.999439742140392,
+    "cluster_size_hist": [
+      0,
+      129,
+      5
+    ]
+  },
+  "Healthy": {
+    "n_files": 1024,
+    "n_unique": 963,
+    "singletons": 907,
+    "multi_image_eyes": 56,
+    "largest_cluster": 4,
+    "median_corr": 0.9195705110932182,
+    "p999_corr": 0.9872256788031243,
+    "max_corr": 0.9994112082755678,
+    "cluster_size_hist": [
+      0,
+      907,
+      52,
+      3,
+      1
+    ]
+  },
+  "threshold_warning": []
+}

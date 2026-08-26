@@ -1,0 +1,1173 @@
+=== DEPS ===
+
+[notice] A new release of pip is available: 24.2 -> 26.2.1
+[notice] To update, run: python -m pip install --upgrade pip
+deps OK
+=== GATE ===
+2.4.1+cu124 12.4 NVIDIA GeForce RTX 4090
+Setting up PyTorch plugin "bias_act_plugin"... /usr/local/lib/python3.11/dist-packages/torch/utils/cpp_extension.py:1965: UserWarning: TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation. 
+If this is not desired, please set os.environ['TORCH_CUDA_ARCH_LIST'].
+  warnings.warn(
+Done.
+Setting up PyTorch plugin "upfirdn2d_plugin"... /usr/local/lib/python3.11/dist-packages/torch/utils/cpp_extension.py:1965: UserWarning: TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation. 
+If this is not desired, please set os.environ['TORCH_CUDA_ARCH_LIST'].
+  warnings.warn(
+Done.
+CUDA ops OK (compiled, not fallback)
+=== A. POOLS ===
+--- /workspace/out/pools/synth_clean_psi1.0
+    1110 images
+--- /workspace/out/pools/synth_clean_psi0.7
+    1110 images
+--- /workspace/out/pools/synth_leak_psi1.0
+    1110 images
+--- /workspace/out/pools/synth_leak_psi0.7
+    1110 images
+pools.tgz 278M
+=== B. CROSS-SCORE (F1) ===
+Loading network from "/workspace/pkl/clean-002822-Gema.pkl"...
+Dataset options:
+{
+  "class_name": "training.dataset.ImageFolderDataset",
+  "path": "/workspace/data/leak_111.zip",
+  "resolution": 256,
+  "use_labels": false,
+  "xflip": true
+}
+Launching processes...
+Setting up PyTorch plugin "bias_act_plugin"... /usr/local/lib/python3.11/dist-packages/torch/utils/cpp_extension.py:1965: UserWarning: TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation. 
+If this is not desired, please set os.environ['TORCH_CUDA_ARCH_LIST'].
+  warnings.warn(
+Done.
+Setting up PyTorch plugin "upfirdn2d_plugin"... /usr/local/lib/python3.11/dist-packages/torch/utils/cpp_extension.py:1965: UserWarning: TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation. 
+If this is not desired, please set os.environ['TORCH_CUDA_ARCH_LIST'].
+  warnings.warn(
+Done.
+
+Generator             Parameters  Buffers  Output shape        Datatype
+---                   ---         ---      ---                 ---     
+mapping.fc0           262656      -        [1, 512]            float32 
+mapping.fc1           262656      -        [1, 512]            float32 
+mapping.fc2           262656      -        [1, 512]            float32 
+mapping.fc3           262656      -        [1, 512]            float32 
+mapping.fc4           262656      -        [1, 512]            float32 
+mapping.fc5           262656      -        [1, 512]            float32 
+mapping.fc6           262656      -        [1, 512]            float32 
+mapping.fc7           262656      -        [1, 512]            float32 
+mapping               -           512      [1, 14, 512]        float32 
+synthesis.b4.conv1    2622465     32       [1, 512, 4, 4]      float32 
+synthesis.b4.torgb    264195      -        [1, 3, 4, 4]        float32 
+synthesis.b4:0        8192        16       [1, 512, 4, 4]      float32 
+synthesis.b4:1        -           -        [1, 512, 4, 4]      float32 
+synthesis.b8.conv0    2622465     80       [1, 512, 8, 8]      float32 
+synthesis.b8.conv1    2622465     80       [1, 512, 8, 8]      float32 
+synthesis.b8.torgb    264195      -        [1, 3, 8, 8]        float32 
+synthesis.b8:0        -           16       [1, 512, 8, 8]      float32 
+synthesis.b8:1        -           -        [1, 512, 8, 8]      float32 
+synthesis.b16.conv0   2622465     272      [1, 512, 16, 16]    float32 
+synthesis.b16.conv1   2622465     272      [1, 512, 16, 16]    float32 
+synthesis.b16.torgb   264195      -        [1, 3, 16, 16]      float32 
+synthesis.b16:0       -           16       [1, 512, 16, 16]    float32 
+synthesis.b16:1       -           -        [1, 512, 16, 16]    float32 
+synthesis.b32.conv0   2622465     1040     [1, 512, 32, 32]    float16 
+synthesis.b32.conv1   2622465     1040     [1, 512, 32, 32]    float16 
+synthesis.b32.torgb   264195      -        [1, 3, 32, 32]      float16 
+synthesis.b32:0       -           16       [1, 512, 32, 32]    float16 
+synthesis.b32:1       -           -        [1, 512, 32, 32]    float32 
+synthesis.b64.conv0   1442561     4112     [1, 256, 64, 64]    float16 
+synthesis.b64.conv1   721409      4112     [1, 256, 64, 64]    float16 
+synthesis.b64.torgb   132099      -        [1, 3, 64, 64]      float16 
+synthesis.b64:0       -           16       [1, 256, 64, 64]    float16 
+synthesis.b64:1       -           -        [1, 256, 64, 64]    float32 
+synthesis.b128.conv0  426369      16400    [1, 128, 128, 128]  float16 
+synthesis.b128.conv1  213249      16400    [1, 128, 128, 128]  float16 
+synthesis.b128.torgb  66051       -        [1, 3, 128, 128]    float16 
+synthesis.b128:0      -           16       [1, 128, 128, 128]  float16 
+synthesis.b128:1      -           -        [1, 128, 128, 128]  float32 
+synthesis.b256.conv0  139457      65552    [1, 64, 256, 256]   float16 
+synthesis.b256.conv1  69761       65552    [1, 64, 256, 256]   float16 
+synthesis.b256.torgb  33027       -        [1, 3, 256, 256]    float16 
+synthesis.b256:0      -           16       [1, 64, 256, 256]   float16 
+synthesis.b256:1      -           -        [1, 64, 256, 256]   float32 
+---                   ---         ---      ---                 ---     
+Total                 24767458    175568   -                   -       
+
+Calculating fid50k_full...
+Downloading https://nvlabs-fi-cdn.nvidia.com/stylegan2-ada-pytorch/pretrained/metrics/inception-2015-12-05.pt ... done
+dataset features    items 111     time 15s          ms/item 131.91
+generator features  items 1024    time 7s           ms/item 6.81
+generator features  items 2048    time 13s          ms/item 6.22
+generator features  items 3072    time 20s          ms/item 6.16
+generator features  items 4096    time 26s          ms/item 6.25
+generator features  items 5120    time 33s          ms/item 6.34
+generator features  items 6144    time 39s          ms/item 6.26
+generator features  items 7168    time 45s          ms/item 6.24
+generator features  items 8192    time 52s          ms/item 6.25
+generator features  items 9216    time 58s          ms/item 6.25
+generator features  items 10240   time 1m 04s       ms/item 6.17
+generator features  items 11264   time 1m 11s       ms/item 6.33
+generator features  items 12288   time 1m 17s       ms/item 6.25
+generator features  items 13312   time 1m 24s       ms/item 6.17
+generator features  items 14336   time 1m 30s       ms/item 6.33
+generator features  items 15360   time 1m 37s       ms/item 6.25
+generator features  items 16384   time 1m 43s       ms/item 6.25
+generator features  items 17408   time 1m 49s       ms/item 6.25
+generator features  items 18432   time 1m 56s       ms/item 6.25
+generator features  items 19456   time 2m 02s       ms/item 6.27
+generator features  items 20480   time 2m 09s       ms/item 6.23
+generator features  items 21504   time 2m 15s       ms/item 6.25
+generator features  items 22528   time 2m 21s       ms/item 6.25
+generator features  items 23552   time 2m 28s       ms/item 6.17
+generator features  items 24576   time 2m 34s       ms/item 6.33
+generator features  items 25600   time 2m 41s       ms/item 6.25
+generator features  items 26624   time 2m 47s       ms/item 6.26
+generator features  items 27648   time 2m 53s       ms/item 6.15
+generator features  items 28672   time 3m 00s       ms/item 6.25
+generator features  items 29696   time 3m 06s       ms/item 6.25
+generator features  items 30720   time 3m 13s       ms/item 6.33
+generator features  items 31744   time 3m 19s       ms/item 6.17
+generator features  items 32768   time 3m 25s       ms/item 6.33
+generator features  items 33792   time 3m 32s       ms/item 6.17
+generator features  items 34816   time 3m 38s       ms/item 6.34
+generator features  items 35840   time 3m 44s       ms/item 6.17
+generator features  items 36864   time 3m 51s       ms/item 6.25
+generator features  items 37888   time 3m 57s       ms/item 6.25
+generator features  items 38912   time 4m 04s       ms/item 6.33
+generator features  items 39936   time 4m 10s       ms/item 6.25
+generator features  items 40960   time 4m 17s       ms/item 6.25
+generator features  items 41984   time 4m 23s       ms/item 6.17
+generator features  items 43008   time 4m 29s       ms/item 6.33
+generator features  items 44032   time 4m 36s       ms/item 6.26
+generator features  items 45056   time 4m 42s       ms/item 6.26
+generator features  items 46080   time 4m 49s       ms/item 6.25
+generator features  items 47104   time 4m 55s       ms/item 6.25
+generator features  items 48128   time 5m 01s       ms/item 6.24
+generator features  items 49152   time 5m 08s       ms/item 6.25
+generator features  items 50000   time 5m 13s       ms/item 6.61
+{"results": {"fid50k_full": 52.01581785257382}, "metric": "fid50k_full", "total_time": 354.01244139671326, "total_time_str": "5m 54s", "num_gpus": 1, "snapshot_pkl": "/workspace/pkl/clean-002822-Gema.pkl", "timestamp": 1787701217.2264507}
+
+Calculating kid50k_full...
+dataset features    items 111     time 6s           ms/item 50.18
+generator features  items 1024    time 4s           ms/item 3.79
+generator features  items 2048    time 8s           ms/item 3.83
+generator features  items 3072    time 12s          ms/item 3.74
+generator features  items 4096    time 15s          ms/item 3.73
+generator features  items 5120    time 19s          ms/item 3.76
+generator features  items 6144    time 23s          ms/item 3.74
+generator features  items 7168    time 27s          ms/item 3.74
+generator features  items 8192    time 31s          ms/item 3.77
+generator features  items 9216    time 35s          ms/item 3.75
+generator features  items 10240   time 39s          ms/item 3.82
+generator features  items 11264   time 42s          ms/item 3.74
+generator features  items 12288   time 46s          ms/item 3.74
+generator features  items 13312   time 50s          ms/item 3.74
+generator features  items 14336   time 54s          ms/item 3.74
+generator features  items 15360   time 58s          ms/item 3.74
+generator features  items 16384   time 1m 02s       ms/item 3.77
+generator features  items 17408   time 1m 05s       ms/item 3.74
+generator features  items 18432   time 1m 09s       ms/item 3.74
+generator features  items 19456   time 1m 13s       ms/item 3.82
+generator features  items 20480   time 1m 17s       ms/item 3.75
+generator features  items 21504   time 1m 21s       ms/item 3.75
+generator features  items 22528   time 1m 25s       ms/item 3.74
+generator features  items 23552   time 1m 28s       ms/item 3.74
+generator features  items 24576   time 1m 32s       ms/item 3.74
+generator features  items 25600   time 1m 36s       ms/item 3.74
+generator features  items 26624   time 1m 40s       ms/item 3.74
+generator features  items 27648   time 1m 44s       ms/item 3.82
+generator features  items 28672   time 1m 48s       ms/item 3.74
+generator features  items 29696   time 1m 52s       ms/item 3.74
+generator features  items 30720   time 1m 55s       ms/item 3.75
+generator features  items 31744   time 1m 59s       ms/item 3.76
+generator features  items 32768   time 2m 03s       ms/item 3.75
+generator features  items 33792   time 2m 07s       ms/item 3.76
+generator features  items 34816   time 2m 11s       ms/item 3.76
+generator features  items 35840   time 2m 15s       ms/item 3.75
+generator features  items 36864   time 2m 19s       ms/item 3.83
+generator features  items 37888   time 2m 22s       ms/item 3.74
+generator features  items 38912   time 2m 26s       ms/item 3.74
+generator features  items 39936   time 2m 30s       ms/item 3.75
+generator features  items 40960   time 2m 34s       ms/item 3.75
+generator features  items 41984   time 2m 38s       ms/item 3.75
+generator features  items 43008   time 2m 42s       ms/item 3.74
+generator features  items 44032   time 2m 45s       ms/item 3.74
+generator features  items 45056   time 2m 49s       ms/item 3.81
+generator features  items 46080   time 2m 53s       ms/item 3.73
+generator features  items 47104   time 2m 57s       ms/item 3.75
+generator features  items 48128   time 3m 01s       ms/item 3.74
+generator features  items 49152   time 3m 05s       ms/item 3.74
+generator features  items 50000   time 3m 08s       ms/item 3.96
+{"results": {"kid50k_full": 0.01948370784521103}, "metric": "kid50k_full", "total_time": 194.5700490474701, "total_time_str": "3m 15s", "num_gpus": 1, "snapshot_pkl": "/workspace/pkl/clean-002822-Gema.pkl", "timestamp": 1787701411.7966485}
+
+Calculating pr50k3_full...
+Downloading https://nvlabs-fi-cdn.nvidia.com/stylegan2-ada-pytorch/pretrained/metrics/vgg16.pt ... done
+dataset features    items 111     time 47s          ms/item 423.54
+generator features  items 1024    time 4s           ms/item 4.09
+generator features  items 2048    time 8s           ms/item 4.04
+generator features  items 3072    time 12s          ms/item 4.02
+generator features  items 4096    time 17s          ms/item 4.01
+generator features  items 5120    time 21s          ms/item 4.02
+generator features  items 6144    time 25s          ms/item 4.01
+generator features  items 7168    time 29s          ms/item 4.01
+generator features  items 8192    time 33s          ms/item 4.07
+generator features  items 9216    time 37s          ms/item 4.01
+generator features  items 10240   time 41s          ms/item 4.02
+generator features  items 11264   time 45s          ms/item 4.01
+generator features  items 12288   time 49s          ms/item 4.01
+generator features  items 13312   time 54s          ms/item 4.03
+generator features  items 14336   time 58s          ms/item 4.01
+generator features  items 15360   time 1m 02s       ms/item 4.01
+generator features  items 16384   time 1m 06s       ms/item 4.06
+generator features  items 17408   time 1m 10s       ms/item 4.01
+generator features  items 18432   time 1m 14s       ms/item 4.01
+generator features  items 19456   time 1m 18s       ms/item 4.01
+generator features  items 20480   time 1m 22s       ms/item 4.01
+generator features  items 21504   time 1m 26s       ms/item 4.01
+generator features  items 22528   time 1m 31s       ms/item 4.01
+generator features  items 23552   time 1m 35s       ms/item 4.00
+generator features  items 24576   time 1m 39s       ms/item 4.08
+generator features  items 25600   time 1m 43s       ms/item 4.02
+generator features  items 26624   time 1m 47s       ms/item 4.02
+generator features  items 27648   time 1m 51s       ms/item 4.02
+generator features  items 28672   time 1m 55s       ms/item 4.02
+generator features  items 29696   time 1m 59s       ms/item 4.02
+generator features  items 30720   time 2m 04s       ms/item 4.02
+generator features  items 31744   time 2m 08s       ms/item 4.02
+generator features  items 32768   time 2m 12s       ms/item 4.11
+generator features  items 33792   time 2m 16s       ms/item 4.03
+generator features  items 34816   time 2m 20s       ms/item 4.10
+generator features  items 35840   time 2m 24s       ms/item 4.03
+generator features  items 36864   time 2m 28s       ms/item 4.02
+generator features  items 37888   time 2m 33s       ms/item 4.04
+generator features  items 38912   time 2m 37s       ms/item 4.18
+generator features  items 39936   time 2m 41s       ms/item 4.07
+generator features  items 40960   time 2m 45s       ms/item 4.10
+generator features  items 41984   time 2m 49s       ms/item 4.03
+generator features  items 43008   time 2m 54s       ms/item 4.03
+generator features  items 44032   time 2m 58s       ms/item 4.02
+generator features  items 45056   time 3m 02s       ms/item 4.02
+generator features  items 46080   time 3m 06s       ms/item 4.02
+generator features  items 47104   time 3m 10s       ms/item 4.03
+generator features  items 48128   time 3m 14s       ms/item 4.02
+generator features  items 49152   time 3m 18s       ms/item 4.10
+generator features  items 50000   time 3m 22s       ms/item 4.25
+{"results": {"pr50k3_full_precision": 0.5161200165748596, "pr50k3_full_recall": 0.054054055362939835}, "metric": "pr50k3_full", "total_time": 270.21239972114563, "total_time_str": "4m 30s", "num_gpus": 1, "snapshot_pkl": "/workspace/pkl/clean-002822-Gema.pkl", "timestamp": 1787701682.0091977}
+
+Exiting...
+Loading network from "/workspace/pkl/leak-003000-Gema.pkl"...
+Dataset options:
+{
+  "class_name": "training.dataset.ImageFolderDataset",
+  "path": "/workspace/data/clean_111.zip",
+  "resolution": 256,
+  "use_labels": false,
+  "xflip": true
+}
+Launching processes...
+Setting up PyTorch plugin "bias_act_plugin"... /usr/local/lib/python3.11/dist-packages/torch/utils/cpp_extension.py:1965: UserWarning: TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation. 
+If this is not desired, please set os.environ['TORCH_CUDA_ARCH_LIST'].
+  warnings.warn(
+Done.
+Setting up PyTorch plugin "upfirdn2d_plugin"... /usr/local/lib/python3.11/dist-packages/torch/utils/cpp_extension.py:1965: UserWarning: TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation. 
+If this is not desired, please set os.environ['TORCH_CUDA_ARCH_LIST'].
+  warnings.warn(
+Done.
+
+Generator             Parameters  Buffers  Output shape        Datatype
+---                   ---         ---      ---                 ---     
+mapping.fc0           262656      -        [1, 512]            float32 
+mapping.fc1           262656      -        [1, 512]            float32 
+mapping.fc2           262656      -        [1, 512]            float32 
+mapping.fc3           262656      -        [1, 512]            float32 
+mapping.fc4           262656      -        [1, 512]            float32 
+mapping.fc5           262656      -        [1, 512]            float32 
+mapping.fc6           262656      -        [1, 512]            float32 
+mapping.fc7           262656      -        [1, 512]            float32 
+mapping               -           512      [1, 14, 512]        float32 
+synthesis.b4.conv1    2622465     32       [1, 512, 4, 4]      float32 
+synthesis.b4.torgb    264195      -        [1, 3, 4, 4]        float32 
+synthesis.b4:0        8192        16       [1, 512, 4, 4]      float32 
+synthesis.b4:1        -           -        [1, 512, 4, 4]      float32 
+synthesis.b8.conv0    2622465     80       [1, 512, 8, 8]      float32 
+synthesis.b8.conv1    2622465     80       [1, 512, 8, 8]      float32 
+synthesis.b8.torgb    264195      -        [1, 3, 8, 8]        float32 
+synthesis.b8:0        -           16       [1, 512, 8, 8]      float32 
+synthesis.b8:1        -           -        [1, 512, 8, 8]      float32 
+synthesis.b16.conv0   2622465     272      [1, 512, 16, 16]    float32 
+synthesis.b16.conv1   2622465     272      [1, 512, 16, 16]    float32 
+synthesis.b16.torgb   264195      -        [1, 3, 16, 16]      float32 
+synthesis.b16:0       -           16       [1, 512, 16, 16]    float32 
+synthesis.b16:1       -           -        [1, 512, 16, 16]    float32 
+synthesis.b32.conv0   2622465     1040     [1, 512, 32, 32]    float16 
+synthesis.b32.conv1   2622465     1040     [1, 512, 32, 32]    float16 
+synthesis.b32.torgb   264195      -        [1, 3, 32, 32]      float16 
+synthesis.b32:0       -           16       [1, 512, 32, 32]    float16 
+synthesis.b32:1       -           -        [1, 512, 32, 32]    float32 
+synthesis.b64.conv0   1442561     4112     [1, 256, 64, 64]    float16 
+synthesis.b64.conv1   721409      4112     [1, 256, 64, 64]    float16 
+synthesis.b64.torgb   132099      -        [1, 3, 64, 64]      float16 
+synthesis.b64:0       -           16       [1, 256, 64, 64]    float16 
+synthesis.b64:1       -           -        [1, 256, 64, 64]    float32 
+synthesis.b128.conv0  426369      16400    [1, 128, 128, 128]  float16 
+synthesis.b128.conv1  213249      16400    [1, 128, 128, 128]  float16 
+synthesis.b128.torgb  66051       -        [1, 3, 128, 128]    float16 
+synthesis.b128:0      -           16       [1, 128, 128, 128]  float16 
+synthesis.b128:1      -           -        [1, 128, 128, 128]  float32 
+synthesis.b256.conv0  139457      65552    [1, 64, 256, 256]   float16 
+synthesis.b256.conv1  69761       65552    [1, 64, 256, 256]   float16 
+synthesis.b256.torgb  33027       -        [1, 3, 256, 256]    float16 
+synthesis.b256:0      -           16       [1, 64, 256, 256]   float16 
+synthesis.b256:1      -           -        [1, 64, 256, 256]   float32 
+---                   ---         ---      ---                 ---     
+Total                 24767458    175568   -                   -       
+
+Calculating fid50k_full...
+dataset features    items 111     time 8s           ms/item 69.26
+generator features  items 1024    time 7s           ms/item 6.85
+generator features  items 2048    time 13s          ms/item 6.28
+generator features  items 3072    time 20s          ms/item 6.25
+generator features  items 4096    time 26s          ms/item 6.24
+generator features  items 5120    time 33s          ms/item 6.23
+generator features  items 6144    time 39s          ms/item 6.25
+generator features  items 7168    time 45s          ms/item 6.25
+generator features  items 8192    time 52s          ms/item 6.27
+generator features  items 9216    time 58s          ms/item 6.24
+generator features  items 10240   time 1m 05s       ms/item 6.16
+generator features  items 11264   time 1m 11s       ms/item 6.35
+generator features  items 12288   time 1m 17s       ms/item 6.15
+generator features  items 13312   time 1m 24s       ms/item 6.33
+generator features  items 14336   time 1m 30s       ms/item 6.25
+generator features  items 15360   time 1m 37s       ms/item 6.25
+generator features  items 16384   time 1m 43s       ms/item 6.25
+generator features  items 17408   time 1m 49s       ms/item 6.17
+generator features  items 18432   time 1m 56s       ms/item 6.33
+generator features  items 19456   time 2m 02s       ms/item 6.25
+generator features  items 20480   time 2m 09s       ms/item 6.25
+generator features  items 21504   time 2m 15s       ms/item 6.25
+generator features  items 22528   time 2m 21s       ms/item 6.17
+generator features  items 23552   time 2m 28s       ms/item 6.33
+generator features  items 24576   time 2m 34s       ms/item 6.17
+generator features  items 25600   time 2m 41s       ms/item 6.33
+generator features  items 26624   time 2m 47s       ms/item 6.17
+generator features  items 27648   time 2m 53s       ms/item 6.33
+generator features  items 28672   time 3m 00s       ms/item 6.25
+generator features  items 29696   time 3m 06s       ms/item 6.17
+generator features  items 30720   time 3m 13s       ms/item 6.35
+generator features  items 31744   time 3m 19s       ms/item 6.23
+generator features  items 32768   time 3m 25s       ms/item 6.27
+generator features  items 33792   time 3m 32s       ms/item 6.15
+generator features  items 34816   time 3m 38s       ms/item 6.33
+generator features  items 35840   time 3m 45s       ms/item 6.17
+generator features  items 36864   time 3m 51s       ms/item 6.34
+generator features  items 37888   time 3m 57s       ms/item 6.26
+generator features  items 38912   time 4m 04s       ms/item 6.15
+generator features  items 39936   time 4m 10s       ms/item 6.33
+generator features  items 40960   time 4m 17s       ms/item 6.25
+generator features  items 41984   time 4m 23s       ms/item 6.26
+generator features  items 43008   time 4m 29s       ms/item 6.23
+generator features  items 44032   time 4m 36s       ms/item 6.27
+generator features  items 45056   time 4m 42s       ms/item 6.24
+generator features  items 46080   time 4m 49s       ms/item 6.25
+generator features  items 47104   time 4m 55s       ms/item 6.25
+generator features  items 48128   time 5m 01s       ms/item 6.25
+generator features  items 49152   time 5m 08s       ms/item 6.17
+generator features  items 50000   time 5m 13s       ms/item 6.60
+{"results": {"fid50k_full": 51.500198930779284}, "metric": "fid50k_full", "total_time": 347.37538504600525, "total_time_str": "5m 47s", "num_gpus": 1, "snapshot_pkl": "/workspace/pkl/leak-003000-Gema.pkl", "timestamp": 1787702033.8336847}
+
+Calculating kid50k_full...
+dataset features    items 111     time 6s           ms/item 51.29
+generator features  items 1024    time 4s           ms/item 3.79
+generator features  items 2048    time 8s           ms/item 3.77
+generator features  items 3072    time 12s          ms/item 3.85
+generator features  items 4096    time 16s          ms/item 3.78
+generator features  items 5120    time 19s          ms/item 3.76
+generator features  items 6144    time 23s          ms/item 3.77
+generator features  items 7168    time 27s          ms/item 3.74
+generator features  items 8192    time 31s          ms/item 3.74
+generator features  items 9216    time 35s          ms/item 3.75
+generator features  items 10240   time 39s          ms/item 3.74
+generator features  items 11264   time 43s          ms/item 3.82
+generator features  items 12288   time 46s          ms/item 3.80
+generator features  items 13312   time 50s          ms/item 3.75
+generator features  items 14336   time 54s          ms/item 3.76
+generator features  items 15360   time 58s          ms/item 3.75
+generator features  items 16384   time 1m 02s       ms/item 3.75
+generator features  items 17408   time 1m 06s       ms/item 3.85
+generator features  items 18432   time 1m 10s       ms/item 3.78
+generator features  items 19456   time 1m 13s       ms/item 3.78
+generator features  items 20480   time 1m 17s       ms/item 3.84
+generator features  items 21504   time 1m 21s       ms/item 3.78
+generator features  items 22528   time 1m 25s       ms/item 3.77
+generator features  items 23552   time 1m 29s       ms/item 3.77
+generator features  items 24576   time 1m 33s       ms/item 3.75
+generator features  items 25600   time 1m 37s       ms/item 3.74
+generator features  items 26624   time 1m 41s       ms/item 3.76
+generator features  items 27648   time 1m 44s       ms/item 3.77
+generator features  items 28672   time 1m 48s       ms/item 3.83
+generator features  items 29696   time 1m 52s       ms/item 3.80
+generator features  items 30720   time 1m 56s       ms/item 3.74
+generator features  items 31744   time 2m 00s       ms/item 3.74
+generator features  items 32768   time 2m 04s       ms/item 3.74
+generator features  items 33792   time 2m 08s       ms/item 3.77
+generator features  items 34816   time 2m 11s       ms/item 3.77
+generator features  items 35840   time 2m 15s       ms/item 3.76
+generator features  items 36864   time 2m 19s       ms/item 3.74
+generator features  items 37888   time 2m 23s       ms/item 3.82
+generator features  items 38912   time 2m 27s       ms/item 3.75
+generator features  items 39936   time 2m 31s       ms/item 3.75
+generator features  items 40960   time 2m 35s       ms/item 3.77
+generator features  items 41984   time 2m 38s       ms/item 3.75
+generator features  items 43008   time 2m 42s       ms/item 3.77
+generator features  items 44032   time 2m 46s       ms/item 3.75
+generator features  items 45056   time 2m 50s       ms/item 3.75
+generator features  items 46080   time 2m 54s       ms/item 3.83
+generator features  items 47104   time 2m 58s       ms/item 3.77
+generator features  items 48128   time 3m 02s       ms/item 3.76
+generator features  items 49152   time 3m 05s       ms/item 3.75
+generator features  items 50000   time 3m 09s       ms/item 3.98
+{"results": {"kid50k_full": 0.018363870680332184}, "metric": "kid50k_full", "total_time": 195.46806263923645, "total_time_str": "3m 15s", "num_gpus": 1, "snapshot_pkl": "/workspace/pkl/leak-003000-Gema.pkl", "timestamp": 1787702229.3018997}
+
+Calculating pr50k3_full...
+dataset features    items 111     time 6s           ms/item 56.42
+generator features  items 1024    time 4s           ms/item 4.04
+generator features  items 2048    time 8s           ms/item 4.03
+generator features  items 3072    time 12s          ms/item 4.09
+generator features  items 4096    time 17s          ms/item 4.03
+generator features  items 5120    time 21s          ms/item 4.04
+generator features  items 6144    time 25s          ms/item 4.04
+generator features  items 7168    time 29s          ms/item 4.03
+generator features  items 8192    time 33s          ms/item 4.03
+generator features  items 9216    time 37s          ms/item 4.02
+generator features  items 10240   time 41s          ms/item 4.07
+generator features  items 11264   time 46s          ms/item 4.08
+generator features  items 12288   time 50s          ms/item 4.07
+generator features  items 13312   time 54s          ms/item 4.04
+generator features  items 14336   time 58s          ms/item 4.03
+generator features  items 15360   time 1m 02s       ms/item 4.04
+generator features  items 16384   time 1m 06s       ms/item 4.04
+generator features  items 17408   time 1m 10s       ms/item 4.04
+generator features  items 18432   time 1m 15s       ms/item 4.04
+generator features  items 19456   time 1m 19s       ms/item 4.09
+generator features  items 20480   time 1m 23s       ms/item 4.03
+generator features  items 21504   time 1m 27s       ms/item 4.04
+generator features  items 22528   time 1m 31s       ms/item 4.04
+generator features  items 23552   time 1m 35s       ms/item 4.03
+generator features  items 24576   time 1m 39s       ms/item 4.06
+generator features  items 25600   time 1m 44s       ms/item 4.05
+generator features  items 26624   time 1m 48s       ms/item 4.04
+generator features  items 27648   time 1m 52s       ms/item 4.10
+generator features  items 28672   time 1m 56s       ms/item 4.06
+generator features  items 29696   time 2m 00s       ms/item 4.08
+generator features  items 30720   time 2m 04s       ms/item 4.10
+generator features  items 31744   time 2m 09s       ms/item 4.10
+generator features  items 32768   time 2m 13s       ms/item 4.05
+generator features  items 33792   time 2m 17s       ms/item 4.05
+generator features  items 34816   time 2m 21s       ms/item 4.05
+generator features  items 35840   time 2m 25s       ms/item 4.12
+generator features  items 36864   time 2m 29s       ms/item 4.04
+generator features  items 37888   time 2m 34s       ms/item 4.03
+generator features  items 38912   time 2m 38s       ms/item 4.03
+generator features  items 39936   time 2m 42s       ms/item 4.04
+generator features  items 40960   time 2m 46s       ms/item 4.03
+generator features  items 41984   time 2m 50s       ms/item 4.04
+generator features  items 43008   time 2m 54s       ms/item 4.06
+generator features  items 44032   time 2m 58s       ms/item 4.10
+generator features  items 45056   time 3m 03s       ms/item 4.04
+generator features  items 46080   time 3m 07s       ms/item 4.04
+generator features  items 47104   time 3m 11s       ms/item 4.21
+generator features  items 48128   time 3m 15s       ms/item 4.14
+generator features  items 49152   time 3m 19s       ms/item 4.06
+generator features  items 50000   time 3m 23s       ms/item 4.27
+{"results": {"pr50k3_full_precision": 0.5532400012016296, "pr50k3_full_recall": 0.027027027681469917}, "metric": "pr50k3_full", "total_time": 230.27272272109985, "total_time_str": "3m 50s", "num_gpus": 1, "snapshot_pkl": "/workspace/pkl/leak-003000-Gema.pkl", "timestamp": 1787702459.5747895}
+
+Exiting...
+=== C. BACKFILL g_clean kid+pr ===
+Loading network from "/workspace/pkl/clean-000403-Gema.pkl"...
+Dataset options:
+{
+  "class_name": "training.dataset.ImageFolderDataset",
+  "path": "/workspace/data/clean_111.zip",
+  "resolution": 256,
+  "use_labels": false,
+  "xflip": true
+}
+Launching processes...
+Setting up PyTorch plugin "bias_act_plugin"... /usr/local/lib/python3.11/dist-packages/torch/utils/cpp_extension.py:1965: UserWarning: TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation. 
+If this is not desired, please set os.environ['TORCH_CUDA_ARCH_LIST'].
+  warnings.warn(
+Done.
+Setting up PyTorch plugin "upfirdn2d_plugin"... /usr/local/lib/python3.11/dist-packages/torch/utils/cpp_extension.py:1965: UserWarning: TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation. 
+If this is not desired, please set os.environ['TORCH_CUDA_ARCH_LIST'].
+  warnings.warn(
+Done.
+
+Generator             Parameters  Buffers  Output shape        Datatype
+---                   ---         ---      ---                 ---     
+mapping.fc0           262656      -        [1, 512]            float32 
+mapping.fc1           262656      -        [1, 512]            float32 
+mapping.fc2           262656      -        [1, 512]            float32 
+mapping.fc3           262656      -        [1, 512]            float32 
+mapping.fc4           262656      -        [1, 512]            float32 
+mapping.fc5           262656      -        [1, 512]            float32 
+mapping.fc6           262656      -        [1, 512]            float32 
+mapping.fc7           262656      -        [1, 512]            float32 
+mapping               -           512      [1, 14, 512]        float32 
+synthesis.b4.conv1    2622465     32       [1, 512, 4, 4]      float32 
+synthesis.b4.torgb    264195      -        [1, 3, 4, 4]        float32 
+synthesis.b4:0        8192        16       [1, 512, 4, 4]      float32 
+synthesis.b4:1        -           -        [1, 512, 4, 4]      float32 
+synthesis.b8.conv0    2622465     80       [1, 512, 8, 8]      float32 
+synthesis.b8.conv1    2622465     80       [1, 512, 8, 8]      float32 
+synthesis.b8.torgb    264195      -        [1, 3, 8, 8]        float32 
+synthesis.b8:0        -           16       [1, 512, 8, 8]      float32 
+synthesis.b8:1        -           -        [1, 512, 8, 8]      float32 
+synthesis.b16.conv0   2622465     272      [1, 512, 16, 16]    float32 
+synthesis.b16.conv1   2622465     272      [1, 512, 16, 16]    float32 
+synthesis.b16.torgb   264195      -        [1, 3, 16, 16]      float32 
+synthesis.b16:0       -           16       [1, 512, 16, 16]    float32 
+synthesis.b16:1       -           -        [1, 512, 16, 16]    float32 
+synthesis.b32.conv0   2622465     1040     [1, 512, 32, 32]    float16 
+synthesis.b32.conv1   2622465     1040     [1, 512, 32, 32]    float16 
+synthesis.b32.torgb   264195      -        [1, 3, 32, 32]      float16 
+synthesis.b32:0       -           16       [1, 512, 32, 32]    float16 
+synthesis.b32:1       -           -        [1, 512, 32, 32]    float32 
+synthesis.b64.conv0   1442561     4112     [1, 256, 64, 64]    float16 
+synthesis.b64.conv1   721409      4112     [1, 256, 64, 64]    float16 
+synthesis.b64.torgb   132099      -        [1, 3, 64, 64]      float16 
+synthesis.b64:0       -           16       [1, 256, 64, 64]    float16 
+synthesis.b64:1       -           -        [1, 256, 64, 64]    float32 
+synthesis.b128.conv0  426369      16400    [1, 128, 128, 128]  float16 
+synthesis.b128.conv1  213249      16400    [1, 128, 128, 128]  float16 
+synthesis.b128.torgb  66051       -        [1, 3, 128, 128]    float16 
+synthesis.b128:0      -           16       [1, 128, 128, 128]  float16 
+synthesis.b128:1      -           -        [1, 128, 128, 128]  float32 
+synthesis.b256.conv0  139457      65552    [1, 64, 256, 256]   float16 
+synthesis.b256.conv1  69761       65552    [1, 64, 256, 256]   float16 
+synthesis.b256.torgb  33027       -        [1, 3, 256, 256]    float16 
+synthesis.b256:0      -           16       [1, 64, 256, 256]   float16 
+synthesis.b256:1      -           -        [1, 64, 256, 256]   float32 
+---                   ---         ---      ---                 ---     
+Total                 24767458    175568   -                   -       
+
+Calculating kid50k_full...
+generator features  items 1024    time 8s           ms/item 8.23
+generator features  items 2048    time 12s          ms/item 3.73
+generator features  items 3072    time 16s          ms/item 3.73
+generator features  items 4096    time 20s          ms/item 3.84
+generator features  items 5120    time 24s          ms/item 3.74
+generator features  items 6144    time 28s          ms/item 3.75
+generator features  items 7168    time 31s          ms/item 3.73
+generator features  items 8192    time 35s          ms/item 3.74
+generator features  items 9216    time 39s          ms/item 3.74
+generator features  items 10240   time 43s          ms/item 3.74
+generator features  items 11264   time 47s          ms/item 3.77
+generator features  items 12288   time 51s          ms/item 3.79
+generator features  items 13312   time 55s          ms/item 3.77
+generator features  items 14336   time 58s          ms/item 3.72
+generator features  items 15360   time 1m 02s       ms/item 3.83
+generator features  items 16384   time 1m 06s       ms/item 3.88
+generator features  items 17408   time 1m 10s       ms/item 3.88
+generator features  items 18432   time 1m 14s       ms/item 3.84
+generator features  items 19456   time 1m 18s       ms/item 3.74
+generator features  items 20480   time 1m 22s       ms/item 3.76
+generator features  items 21504   time 1m 26s       ms/item 3.79
+generator features  items 22528   time 1m 30s       ms/item 3.76
+generator features  items 23552   time 1m 33s       ms/item 3.73
+generator features  items 24576   time 1m 37s       ms/item 3.75
+generator features  items 25600   time 1m 41s       ms/item 3.73
+generator features  items 26624   time 1m 45s       ms/item 3.81
+generator features  items 27648   time 1m 49s       ms/item 3.72
+generator features  items 28672   time 1m 53s       ms/item 3.72
+generator features  items 29696   time 1m 56s       ms/item 3.72
+generator features  items 30720   time 2m 00s       ms/item 3.77
+generator features  items 31744   time 2m 04s       ms/item 3.72
+generator features  items 32768   time 2m 08s       ms/item 3.79
+generator features  items 33792   time 2m 12s       ms/item 3.74
+generator features  items 34816   time 2m 16s       ms/item 3.75
+generator features  items 35840   time 2m 19s       ms/item 3.74
+generator features  items 36864   time 2m 23s       ms/item 3.75
+generator features  items 37888   time 2m 27s       ms/item 3.74
+generator features  items 38912   time 2m 31s       ms/item 3.76
+generator features  items 39936   time 2m 35s       ms/item 3.78
+generator features  items 40960   time 2m 39s       ms/item 3.74
+generator features  items 41984   time 2m 42s       ms/item 3.74
+generator features  items 43008   time 2m 46s       ms/item 3.75
+generator features  items 44032   time 2m 50s       ms/item 3.74
+generator features  items 45056   time 2m 54s       ms/item 3.74
+generator features  items 46080   time 2m 58s       ms/item 3.74
+generator features  items 47104   time 3m 02s       ms/item 3.75
+generator features  items 48128   time 3m 06s       ms/item 3.80
+generator features  items 49152   time 3m 09s       ms/item 3.75
+generator features  items 50000   time 3m 13s       ms/item 3.99
+{"results": {"kid50k_full": 0.0281872246414423}, "metric": "kid50k_full", "total_time": 193.34267354011536, "total_time_str": "3m 13s", "num_gpus": 1, "snapshot_pkl": "/workspace/pkl/clean-000403-Gema.pkl", "timestamp": 1787702657.4018064}
+
+Calculating pr50k3_full...
+generator features  items 1024    time 7s           ms/item 6.73
+generator features  items 2048    time 11s          ms/item 4.01
+generator features  items 3072    time 15s          ms/item 4.02
+generator features  items 4096    time 19s          ms/item 4.01
+generator features  items 5120    time 23s          ms/item 4.03
+generator features  items 6144    time 27s          ms/item 4.03
+generator features  items 7168    time 32s          ms/item 4.03
+generator features  items 8192    time 36s          ms/item 4.02
+generator features  items 9216    time 40s          ms/item 4.02
+generator features  items 10240   time 44s          ms/item 4.02
+generator features  items 11264   time 48s          ms/item 4.02
+generator features  items 12288   time 52s          ms/item 4.02
+generator features  items 13312   time 56s          ms/item 4.05
+generator features  items 14336   time 1m 00s       ms/item 4.04
+generator features  items 15360   time 1m 05s       ms/item 4.02
+generator features  items 16384   time 1m 09s       ms/item 4.08
+generator features  items 17408   time 1m 13s       ms/item 4.13
+generator features  items 18432   time 1m 17s       ms/item 4.08
+generator features  items 19456   time 1m 21s       ms/item 4.08
+generator features  items 20480   time 1m 26s       ms/item 4.15
+generator features  items 21504   time 1m 30s       ms/item 4.18
+generator features  items 22528   time 1m 34s       ms/item 4.04
+generator features  items 23552   time 1m 38s       ms/item 4.07
+generator features  items 24576   time 1m 42s       ms/item 4.10
+generator features  items 25600   time 1m 47s       ms/item 4.05
+generator features  items 26624   time 1m 51s       ms/item 4.04
+generator features  items 27648   time 1m 55s       ms/item 4.05
+generator features  items 28672   time 1m 59s       ms/item 4.04
+generator features  items 29696   time 2m 03s       ms/item 4.10
+generator features  items 30720   time 2m 07s       ms/item 4.03
+generator features  items 31744   time 2m 11s       ms/item 4.06
+generator features  items 32768   time 2m 16s       ms/item 4.03
+generator features  items 33792   time 2m 20s       ms/item 4.03
+generator features  items 34816   time 2m 24s       ms/item 4.04
+generator features  items 35840   time 2m 28s       ms/item 4.04
+generator features  items 36864   time 2m 32s       ms/item 4.05
+generator features  items 37888   time 2m 36s       ms/item 4.11
+generator features  items 38912   time 2m 40s       ms/item 4.09
+generator features  items 39936   time 2m 45s       ms/item 4.11
+generator features  items 40960   time 2m 49s       ms/item 4.11
+generator features  items 41984   time 2m 53s       ms/item 4.12
+generator features  items 43008   time 2m 57s       ms/item 4.12
+generator features  items 44032   time 3m 02s       ms/item 4.12
+generator features  items 45056   time 3m 06s       ms/item 4.13
+generator features  items 46080   time 3m 10s       ms/item 4.15
+generator features  items 47104   time 3m 14s       ms/item 4.06
+generator features  items 48128   time 3m 18s       ms/item 4.05
+generator features  items 49152   time 3m 23s       ms/item 4.06
+generator features  items 50000   time 3m 26s       ms/item 4.27
+{"results": {"pr50k3_full_precision": 0.4278999865055084, "pr50k3_full_recall": 0.036036036908626556}, "metric": "pr50k3_full", "total_time": 226.88946223258972, "total_time_str": "3m 47s", "num_gpus": 1, "snapshot_pkl": "/workspace/pkl/clean-000403-Gema.pkl", "timestamp": 1787702884.2914345}
+
+Exiting...
+Loading network from "/workspace/pkl/clean-000806-Gema.pkl"...
+Dataset options:
+{
+  "class_name": "training.dataset.ImageFolderDataset",
+  "path": "/workspace/data/clean_111.zip",
+  "resolution": 256,
+  "use_labels": false,
+  "xflip": true
+}
+Launching processes...
+Setting up PyTorch plugin "bias_act_plugin"... /usr/local/lib/python3.11/dist-packages/torch/utils/cpp_extension.py:1965: UserWarning: TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation. 
+If this is not desired, please set os.environ['TORCH_CUDA_ARCH_LIST'].
+  warnings.warn(
+Done.
+Setting up PyTorch plugin "upfirdn2d_plugin"... /usr/local/lib/python3.11/dist-packages/torch/utils/cpp_extension.py:1965: UserWarning: TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation. 
+If this is not desired, please set os.environ['TORCH_CUDA_ARCH_LIST'].
+  warnings.warn(
+Done.
+
+Generator             Parameters  Buffers  Output shape        Datatype
+---                   ---         ---      ---                 ---     
+mapping.fc0           262656      -        [1, 512]            float32 
+mapping.fc1           262656      -        [1, 512]            float32 
+mapping.fc2           262656      -        [1, 512]            float32 
+mapping.fc3           262656      -        [1, 512]            float32 
+mapping.fc4           262656      -        [1, 512]            float32 
+mapping.fc5           262656      -        [1, 512]            float32 
+mapping.fc6           262656      -        [1, 512]            float32 
+mapping.fc7           262656      -        [1, 512]            float32 
+mapping               -           512      [1, 14, 512]        float32 
+synthesis.b4.conv1    2622465     32       [1, 512, 4, 4]      float32 
+synthesis.b4.torgb    264195      -        [1, 3, 4, 4]        float32 
+synthesis.b4:0        8192        16       [1, 512, 4, 4]      float32 
+synthesis.b4:1        -           -        [1, 512, 4, 4]      float32 
+synthesis.b8.conv0    2622465     80       [1, 512, 8, 8]      float32 
+synthesis.b8.conv1    2622465     80       [1, 512, 8, 8]      float32 
+synthesis.b8.torgb    264195      -        [1, 3, 8, 8]        float32 
+synthesis.b8:0        -           16       [1, 512, 8, 8]      float32 
+synthesis.b8:1        -           -        [1, 512, 8, 8]      float32 
+synthesis.b16.conv0   2622465     272      [1, 512, 16, 16]    float32 
+synthesis.b16.conv1   2622465     272      [1, 512, 16, 16]    float32 
+synthesis.b16.torgb   264195      -        [1, 3, 16, 16]      float32 
+synthesis.b16:0       -           16       [1, 512, 16, 16]    float32 
+synthesis.b16:1       -           -        [1, 512, 16, 16]    float32 
+synthesis.b32.conv0   2622465     1040     [1, 512, 32, 32]    float16 
+synthesis.b32.conv1   2622465     1040     [1, 512, 32, 32]    float16 
+synthesis.b32.torgb   264195      -        [1, 3, 32, 32]      float16 
+synthesis.b32:0       -           16       [1, 512, 32, 32]    float16 
+synthesis.b32:1       -           -        [1, 512, 32, 32]    float32 
+synthesis.b64.conv0   1442561     4112     [1, 256, 64, 64]    float16 
+synthesis.b64.conv1   721409      4112     [1, 256, 64, 64]    float16 
+synthesis.b64.torgb   132099      -        [1, 3, 64, 64]      float16 
+synthesis.b64:0       -           16       [1, 256, 64, 64]    float16 
+synthesis.b64:1       -           -        [1, 256, 64, 64]    float32 
+synthesis.b128.conv0  426369      16400    [1, 128, 128, 128]  float16 
+synthesis.b128.conv1  213249      16400    [1, 128, 128, 128]  float16 
+synthesis.b128.torgb  66051       -        [1, 3, 128, 128]    float16 
+synthesis.b128:0      -           16       [1, 128, 128, 128]  float16 
+synthesis.b128:1      -           -        [1, 128, 128, 128]  float32 
+synthesis.b256.conv0  139457      65552    [1, 64, 256, 256]   float16 
+synthesis.b256.conv1  69761       65552    [1, 64, 256, 256]   float16 
+synthesis.b256.torgb  33027       -        [1, 3, 256, 256]    float16 
+synthesis.b256:0      -           16       [1, 64, 256, 256]   float16 
+synthesis.b256:1      -           -        [1, 64, 256, 256]   float32 
+---                   ---         ---      ---                 ---     
+Total                 24767458    175568   -                   -       
+
+Calculating kid50k_full...
+generator features  items 1024    time 8s           ms/item 8.23
+generator features  items 2048    time 12s          ms/item 3.77
+generator features  items 3072    time 16s          ms/item 3.76
+generator features  items 4096    time 20s          ms/item 3.75
+generator features  items 5120    time 24s          ms/item 3.75
+generator features  items 6144    time 28s          ms/item 3.81
+generator features  items 7168    time 32s          ms/item 3.74
+generator features  items 8192    time 35s          ms/item 3.76
+generator features  items 9216    time 39s          ms/item 3.74
+generator features  items 10240   time 43s          ms/item 3.74
+generator features  items 11264   time 47s          ms/item 3.74
+generator features  items 12288   time 51s          ms/item 3.75
+generator features  items 13312   time 55s          ms/item 3.89
+generator features  items 14336   time 59s          ms/item 3.95
+generator features  items 15360   time 1m 03s       ms/item 3.79
+generator features  items 16384   time 1m 06s       ms/item 3.76
+generator features  items 17408   time 1m 10s       ms/item 3.75
+generator features  items 18432   time 1m 14s       ms/item 3.75
+generator features  items 19456   time 1m 18s       ms/item 3.76
+generator features  items 20480   time 1m 22s       ms/item 3.76
+generator features  items 21504   time 1m 26s       ms/item 3.75
+generator features  items 22528   time 1m 30s       ms/item 3.76
+generator features  items 23552   time 1m 33s       ms/item 3.80
+generator features  items 24576   time 1m 37s       ms/item 3.75
+generator features  items 25600   time 1m 41s       ms/item 3.77
+generator features  items 26624   time 1m 45s       ms/item 3.75
+generator features  items 27648   time 1m 49s       ms/item 3.75
+generator features  items 28672   time 1m 53s       ms/item 3.75
+generator features  items 29696   time 1m 57s       ms/item 3.76
+generator features  items 30720   time 2m 00s       ms/item 3.76
+generator features  items 31744   time 2m 04s       ms/item 3.84
+generator features  items 32768   time 2m 08s       ms/item 3.86
+generator features  items 33792   time 2m 12s       ms/item 3.75
+generator features  items 34816   time 2m 16s       ms/item 3.74
+generator features  items 35840   time 2m 20s       ms/item 3.87
+generator features  items 36864   time 2m 24s       ms/item 3.97
+generator features  items 37888   time 2m 28s       ms/item 3.78
+generator features  items 38912   time 2m 32s       ms/item 3.74
+generator features  items 39936   time 2m 35s       ms/item 3.74
+generator features  items 40960   time 2m 39s       ms/item 3.74
+generator features  items 41984   time 2m 43s       ms/item 3.82
+generator features  items 43008   time 2m 47s       ms/item 3.82
+generator features  items 44032   time 2m 51s       ms/item 3.74
+generator features  items 45056   time 2m 55s       ms/item 3.74
+generator features  items 46080   time 2m 59s       ms/item 3.74
+generator features  items 47104   time 3m 02s       ms/item 3.74
+generator features  items 48128   time 3m 06s       ms/item 3.74
+generator features  items 49152   time 3m 10s       ms/item 3.75
+generator features  items 50000   time 3m 14s       ms/item 4.06
+{"results": {"kid50k_full": 0.024829626083374023}, "metric": "kid50k_full", "total_time": 194.14757251739502, "total_time_str": "3m 14s", "num_gpus": 1, "snapshot_pkl": "/workspace/pkl/clean-000806-Gema.pkl", "timestamp": 1787703082.90175}
+
+Calculating pr50k3_full...
+generator features  items 1024    time 7s           ms/item 6.88
+generator features  items 2048    time 11s          ms/item 4.07
+generator features  items 3072    time 15s          ms/item 4.08
+generator features  items 4096    time 20s          ms/item 4.08
+generator features  items 5120    time 24s          ms/item 4.06
+generator features  items 6144    time 28s          ms/item 4.06
+generator features  items 7168    time 32s          ms/item 4.09
+generator features  items 8192    time 36s          ms/item 4.11
+generator features  items 9216    time 41s          ms/item 4.12
+generator features  items 10240   time 45s          ms/item 4.11
+generator features  items 11264   time 49s          ms/item 4.07
+generator features  items 12288   time 53s          ms/item 4.09
+generator features  items 13312   time 57s          ms/item 4.09
+generator features  items 14336   time 1m 01s       ms/item 4.09
+generator features  items 15360   time 1m 06s       ms/item 4.10
+generator features  items 16384   time 1m 10s       ms/item 4.15
+generator features  items 17408   time 1m 14s       ms/item 4.10
+generator features  items 18432   time 1m 18s       ms/item 4.13
+generator features  items 19456   time 1m 23s       ms/item 4.17
+generator features  items 20480   time 1m 27s       ms/item 4.09
+generator features  items 21504   time 1m 31s       ms/item 4.08
+generator features  items 22528   time 1m 35s       ms/item 4.06
+generator features  items 23552   time 1m 39s       ms/item 4.07
+generator features  items 24576   time 1m 44s       ms/item 4.12
+generator features  items 25600   time 1m 48s       ms/item 4.08
+generator features  items 26624   time 1m 52s       ms/item 4.06
+generator features  items 27648   time 1m 56s       ms/item 4.07
+generator features  items 28672   time 2m 00s       ms/item 4.06
+generator features  items 29696   time 2m 04s       ms/item 4.06
+generator features  items 30720   time 2m 09s       ms/item 4.07
+generator features  items 31744   time 2m 13s       ms/item 4.09
+generator features  items 32768   time 2m 17s       ms/item 4.14
+generator features  items 33792   time 2m 21s       ms/item 4.06
+generator features  items 34816   time 2m 25s       ms/item 4.06
+generator features  items 35840   time 2m 29s       ms/item 4.08
+generator features  items 36864   time 2m 34s       ms/item 4.06
+generator features  items 37888   time 2m 38s       ms/item 4.08
+generator features  items 38912   time 2m 42s       ms/item 4.07
+generator features  items 39936   time 2m 46s       ms/item 4.06
+generator features  items 40960   time 2m 50s       ms/item 4.13
+generator features  items 41984   time 2m 55s       ms/item 4.08
+generator features  items 43008   time 2m 59s       ms/item 4.07
+generator features  items 44032   time 3m 03s       ms/item 4.07
+generator features  items 45056   time 3m 07s       ms/item 4.06
+generator features  items 46080   time 3m 11s       ms/item 4.06
+generator features  items 47104   time 3m 15s       ms/item 4.08
+generator features  items 48128   time 3m 20s       ms/item 4.07
+generator features  items 49152   time 3m 24s       ms/item 4.14
+generator features  items 50000   time 3m 27s       ms/item 4.28
+{"results": {"pr50k3_full_precision": 0.4735200107097626, "pr50k3_full_recall": 0.054054055362939835}, "metric": "pr50k3_full", "total_time": 227.05494475364685, "total_time_str": "3m 47s", "num_gpus": 1, "snapshot_pkl": "/workspace/pkl/clean-000806-Gema.pkl", "timestamp": 1787703309.9568634}
+
+Exiting...
+Loading network from "/workspace/pkl/clean-001209-Gema.pkl"...
+Dataset options:
+{
+  "class_name": "training.dataset.ImageFolderDataset",
+  "path": "/workspace/data/clean_111.zip",
+  "resolution": 256,
+  "use_labels": false,
+  "xflip": true
+}
+Launching processes...
+Setting up PyTorch plugin "bias_act_plugin"... /usr/local/lib/python3.11/dist-packages/torch/utils/cpp_extension.py:1965: UserWarning: TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation. 
+If this is not desired, please set os.environ['TORCH_CUDA_ARCH_LIST'].
+  warnings.warn(
+Done.
+Setting up PyTorch plugin "upfirdn2d_plugin"... /usr/local/lib/python3.11/dist-packages/torch/utils/cpp_extension.py:1965: UserWarning: TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation. 
+If this is not desired, please set os.environ['TORCH_CUDA_ARCH_LIST'].
+  warnings.warn(
+Done.
+
+Generator             Parameters  Buffers  Output shape        Datatype
+---                   ---         ---      ---                 ---     
+mapping.fc0           262656      -        [1, 512]            float32 
+mapping.fc1           262656      -        [1, 512]            float32 
+mapping.fc2           262656      -        [1, 512]            float32 
+mapping.fc3           262656      -        [1, 512]            float32 
+mapping.fc4           262656      -        [1, 512]            float32 
+mapping.fc5           262656      -        [1, 512]            float32 
+mapping.fc6           262656      -        [1, 512]            float32 
+mapping.fc7           262656      -        [1, 512]            float32 
+mapping               -           512      [1, 14, 512]        float32 
+synthesis.b4.conv1    2622465     32       [1, 512, 4, 4]      float32 
+synthesis.b4.torgb    264195      -        [1, 3, 4, 4]        float32 
+synthesis.b4:0        8192        16       [1, 512, 4, 4]      float32 
+synthesis.b4:1        -           -        [1, 512, 4, 4]      float32 
+synthesis.b8.conv0    2622465     80       [1, 512, 8, 8]      float32 
+synthesis.b8.conv1    2622465     80       [1, 512, 8, 8]      float32 
+synthesis.b8.torgb    264195      -        [1, 3, 8, 8]        float32 
+synthesis.b8:0        -           16       [1, 512, 8, 8]      float32 
+synthesis.b8:1        -           -        [1, 512, 8, 8]      float32 
+synthesis.b16.conv0   2622465     272      [1, 512, 16, 16]    float32 
+synthesis.b16.conv1   2622465     272      [1, 512, 16, 16]    float32 
+synthesis.b16.torgb   264195      -        [1, 3, 16, 16]      float32 
+synthesis.b16:0       -           16       [1, 512, 16, 16]    float32 
+synthesis.b16:1       -           -        [1, 512, 16, 16]    float32 
+synthesis.b32.conv0   2622465     1040     [1, 512, 32, 32]    float16 
+synthesis.b32.conv1   2622465     1040     [1, 512, 32, 32]    float16 
+synthesis.b32.torgb   264195      -        [1, 3, 32, 32]      float16 
+synthesis.b32:0       -           16       [1, 512, 32, 32]    float16 
+synthesis.b32:1       -           -        [1, 512, 32, 32]    float32 
+synthesis.b64.conv0   1442561     4112     [1, 256, 64, 64]    float16 
+synthesis.b64.conv1   721409      4112     [1, 256, 64, 64]    float16 
+synthesis.b64.torgb   132099      -        [1, 3, 64, 64]      float16 
+synthesis.b64:0       -           16       [1, 256, 64, 64]    float16 
+synthesis.b64:1       -           -        [1, 256, 64, 64]    float32 
+synthesis.b128.conv0  426369      16400    [1, 128, 128, 128]  float16 
+synthesis.b128.conv1  213249      16400    [1, 128, 128, 128]  float16 
+synthesis.b128.torgb  66051       -        [1, 3, 128, 128]    float16 
+synthesis.b128:0      -           16       [1, 128, 128, 128]  float16 
+synthesis.b128:1      -           -        [1, 128, 128, 128]  float32 
+synthesis.b256.conv0  139457      65552    [1, 64, 256, 256]   float16 
+synthesis.b256.conv1  69761       65552    [1, 64, 256, 256]   float16 
+synthesis.b256.torgb  33027       -        [1, 3, 256, 256]    float16 
+synthesis.b256:0      -           16       [1, 64, 256, 256]   float16 
+synthesis.b256:1      -           -        [1, 64, 256, 256]   float32 
+---                   ---         ---      ---                 ---     
+Total                 24767458    175568   -                   -       
+
+Calculating kid50k_full...
+generator features  items 1024    time 8s           ms/item 8.22
+generator features  items 2048    time 12s          ms/item 3.75
+generator features  items 3072    time 16s          ms/item 3.74
+generator features  items 4096    time 20s          ms/item 3.74
+generator features  items 5120    time 24s          ms/item 3.73
+generator features  items 6144    time 28s          ms/item 3.74
+generator features  items 7168    time 31s          ms/item 3.74
+generator features  items 8192    time 35s          ms/item 3.81
+generator features  items 9216    time 39s          ms/item 3.77
+generator features  items 10240   time 43s          ms/item 3.74
+generator features  items 11264   time 47s          ms/item 3.73
+generator features  items 12288   time 51s          ms/item 3.78
+generator features  items 13312   time 55s          ms/item 3.75
+generator features  items 14336   time 58s          ms/item 3.75
+generator features  items 15360   time 1m 02s       ms/item 3.74
+generator features  items 16384   time 1m 06s       ms/item 3.75
+generator features  items 17408   time 1m 10s       ms/item 3.79
+generator features  items 18432   time 1m 14s       ms/item 3.74
+generator features  items 19456   time 1m 18s       ms/item 3.73
+generator features  items 20480   time 1m 21s       ms/item 3.74
+generator features  items 21504   time 1m 25s       ms/item 3.73
+generator features  items 22528   time 1m 29s       ms/item 3.74
+generator features  items 23552   time 1m 33s       ms/item 3.73
+generator features  items 24576   time 1m 37s       ms/item 3.74
+generator features  items 25600   time 1m 41s       ms/item 3.79
+generator features  items 26624   time 1m 44s       ms/item 3.73
+generator features  items 27648   time 1m 48s       ms/item 3.73
+generator features  items 28672   time 1m 52s       ms/item 3.75
+generator features  items 29696   time 1m 56s       ms/item 3.73
+generator features  items 30720   time 2m 00s       ms/item 3.73
+generator features  items 31744   time 2m 04s       ms/item 3.73
+generator features  items 32768   time 2m 07s       ms/item 3.73
+generator features  items 33792   time 2m 11s       ms/item 3.73
+generator features  items 34816   time 2m 15s       ms/item 3.78
+generator features  items 35840   time 2m 19s       ms/item 3.73
+generator features  items 36864   time 2m 23s       ms/item 3.73
+generator features  items 37888   time 2m 26s       ms/item 3.74
+generator features  items 38912   time 2m 30s       ms/item 3.73
+generator features  items 39936   time 2m 34s       ms/item 3.78
+generator features  items 40960   time 2m 38s       ms/item 3.79
+generator features  items 41984   time 2m 42s       ms/item 3.75
+generator features  items 43008   time 2m 46s       ms/item 3.78
+generator features  items 44032   time 2m 50s       ms/item 3.76
+generator features  items 45056   time 2m 53s       ms/item 3.75
+generator features  items 46080   time 2m 57s       ms/item 3.74
+generator features  items 47104   time 3m 01s       ms/item 3.75
+generator features  items 48128   time 3m 05s       ms/item 3.75
+generator features  items 49152   time 3m 09s       ms/item 3.76
+generator features  items 50000   time 3m 12s       ms/item 3.99
+{"results": {"kid50k_full": 0.022725317627191544}, "metric": "kid50k_full", "total_time": 192.7595875263214, "total_time_str": "3m 13s", "num_gpus": 1, "snapshot_pkl": "/workspace/pkl/clean-001209-Gema.pkl", "timestamp": 1787703507.1127899}
+
+Calculating pr50k3_full...
+generator features  items 1024    time 7s           ms/item 6.82
+generator features  items 2048    time 11s          ms/item 4.03
+generator features  items 3072    time 15s          ms/item 4.06
+generator features  items 4096    time 19s          ms/item 4.04
+generator features  items 5120    time 24s          ms/item 4.06
+generator features  items 6144    time 28s          ms/item 4.04
+generator features  items 7168    time 32s          ms/item 4.03
+generator features  items 8192    time 36s          ms/item 4.06
+generator features  items 9216    time 40s          ms/item 4.08
+generator features  items 10240   time 44s          ms/item 4.04
+generator features  items 11264   time 48s          ms/item 4.06
+generator features  items 12288   time 53s          ms/item 4.05
+generator features  items 13312   time 57s          ms/item 4.06
+generator features  items 14336   time 1m 01s       ms/item 4.09
+generator features  items 15360   time 1m 05s       ms/item 4.04
+generator features  items 16384   time 1m 09s       ms/item 4.06
+generator features  items 17408   time 1m 13s       ms/item 4.12
+generator features  items 18432   time 1m 18s       ms/item 4.10
+generator features  items 19456   time 1m 22s       ms/item 4.12
+generator features  items 20480   time 1m 26s       ms/item 4.15
+generator features  items 21504   time 1m 30s       ms/item 4.04
+generator features  items 22528   time 1m 34s       ms/item 4.05
+generator features  items 23552   time 1m 39s       ms/item 4.04
+generator features  items 24576   time 1m 43s       ms/item 4.04
+generator features  items 25600   time 1m 47s       ms/item 4.11
+generator features  items 26624   time 1m 51s       ms/item 4.05
+generator features  items 27648   time 1m 55s       ms/item 4.07
+generator features  items 28672   time 1m 59s       ms/item 4.05
+generator features  items 29696   time 2m 04s       ms/item 4.06
+generator features  items 30720   time 2m 08s       ms/item 4.06
+generator features  items 31744   time 2m 12s       ms/item 4.06
+generator features  items 32768   time 2m 16s       ms/item 4.08
+generator features  items 33792   time 2m 20s       ms/item 4.12
+generator features  items 34816   time 2m 24s       ms/item 4.06
+generator features  items 35840   time 2m 29s       ms/item 4.07
+generator features  items 36864   time 2m 33s       ms/item 4.05
+generator features  items 37888   time 2m 37s       ms/item 4.07
+generator features  items 38912   time 2m 41s       ms/item 4.07
+generator features  items 39936   time 2m 45s       ms/item 4.07
+generator features  items 40960   time 2m 49s       ms/item 4.08
+generator features  items 41984   time 2m 54s       ms/item 4.11
+generator features  items 43008   time 2m 58s       ms/item 4.06
+generator features  items 44032   time 3m 02s       ms/item 4.06
+generator features  items 45056   time 3m 06s       ms/item 4.06
+generator features  items 46080   time 3m 10s       ms/item 4.05
+generator features  items 47104   time 3m 14s       ms/item 4.10
+generator features  items 48128   time 3m 19s       ms/item 4.06
+generator features  items 49152   time 3m 23s       ms/item 4.12
+generator features  items 50000   time 3m 26s       ms/item 4.30
+{"results": {"pr50k3_full_precision": 0.5239800214767456, "pr50k3_full_recall": 0.027027027681469917}, "metric": "pr50k3_full", "total_time": 226.71514415740967, "total_time_str": "3m 47s", "num_gpus": 1, "snapshot_pkl": "/workspace/pkl/clean-001209-Gema.pkl", "timestamp": 1787703733.8281019}
+
+Exiting...
+Loading network from "/workspace/pkl/clean-001612-Gema.pkl"...
+Dataset options:
+{
+  "class_name": "training.dataset.ImageFolderDataset",
+  "path": "/workspace/data/clean_111.zip",
+  "resolution": 256,
+  "use_labels": false,
+  "xflip": true
+}
+Launching processes...
+Setting up PyTorch plugin "bias_act_plugin"... /usr/local/lib/python3.11/dist-packages/torch/utils/cpp_extension.py:1965: UserWarning: TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation. 
+If this is not desired, please set os.environ['TORCH_CUDA_ARCH_LIST'].
+  warnings.warn(
+Done.
+Setting up PyTorch plugin "upfirdn2d_plugin"... /usr/local/lib/python3.11/dist-packages/torch/utils/cpp_extension.py:1965: UserWarning: TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation. 
+If this is not desired, please set os.environ['TORCH_CUDA_ARCH_LIST'].
+  warnings.warn(
+Done.
+
+Generator             Parameters  Buffers  Output shape        Datatype
+---                   ---         ---      ---                 ---     
+mapping.fc0           262656      -        [1, 512]            float32 
+mapping.fc1           262656      -        [1, 512]            float32 
+mapping.fc2           262656      -        [1, 512]            float32 
+mapping.fc3           262656      -        [1, 512]            float32 
+mapping.fc4           262656      -        [1, 512]            float32 
+mapping.fc5           262656      -        [1, 512]            float32 
+mapping.fc6           262656      -        [1, 512]            float32 
+mapping.fc7           262656      -        [1, 512]            float32 
+mapping               -           512      [1, 14, 512]        float32 
+synthesis.b4.conv1    2622465     32       [1, 512, 4, 4]      float32 
+synthesis.b4.torgb    264195      -        [1, 3, 4, 4]        float32 
+synthesis.b4:0        8192        16       [1, 512, 4, 4]      float32 
+synthesis.b4:1        -           -        [1, 512, 4, 4]      float32 
+synthesis.b8.conv0    2622465     80       [1, 512, 8, 8]      float32 
+synthesis.b8.conv1    2622465     80       [1, 512, 8, 8]      float32 
+synthesis.b8.torgb    264195      -        [1, 3, 8, 8]        float32 
+synthesis.b8:0        -           16       [1, 512, 8, 8]      float32 
+synthesis.b8:1        -           -        [1, 512, 8, 8]      float32 
+synthesis.b16.conv0   2622465     272      [1, 512, 16, 16]    float32 
+synthesis.b16.conv1   2622465     272      [1, 512, 16, 16]    float32 
+synthesis.b16.torgb   264195      -        [1, 3, 16, 16]      float32 
+synthesis.b16:0       -           16       [1, 512, 16, 16]    float32 
+synthesis.b16:1       -           -        [1, 512, 16, 16]    float32 
+synthesis.b32.conv0   2622465     1040     [1, 512, 32, 32]    float16 
+synthesis.b32.conv1   2622465     1040     [1, 512, 32, 32]    float16 
+synthesis.b32.torgb   264195      -        [1, 3, 32, 32]      float16 
+synthesis.b32:0       -           16       [1, 512, 32, 32]    float16 
+synthesis.b32:1       -           -        [1, 512, 32, 32]    float32 
+synthesis.b64.conv0   1442561     4112     [1, 256, 64, 64]    float16 
+synthesis.b64.conv1   721409      4112     [1, 256, 64, 64]    float16 
+synthesis.b64.torgb   132099      -        [1, 3, 64, 64]      float16 
+synthesis.b64:0       -           16       [1, 256, 64, 64]    float16 
+synthesis.b64:1       -           -        [1, 256, 64, 64]    float32 
+synthesis.b128.conv0  426369      16400    [1, 128, 128, 128]  float16 
+synthesis.b128.conv1  213249      16400    [1, 128, 128, 128]  float16 
+synthesis.b128.torgb  66051       -        [1, 3, 128, 128]    float16 
+synthesis.b128:0      -           16       [1, 128, 128, 128]  float16 
+synthesis.b128:1      -           -        [1, 128, 128, 128]  float32 
+synthesis.b256.conv0  139457      65552    [1, 64, 256, 256]   float16 
+synthesis.b256.conv1  69761       65552    [1, 64, 256, 256]   float16 
+synthesis.b256.torgb  33027       -        [1, 3, 256, 256]    float16 
+synthesis.b256:0      -           16       [1, 64, 256, 256]   float16 
+synthesis.b256:1      -           -        [1, 64, 256, 256]   float32 
+---                   ---         ---      ---                 ---     
+Total                 24767458    175568   -                   -       
+
+Calculating kid50k_full...
+generator features  items 1024    time 9s           ms/item 8.31
+generator features  items 2048    time 12s          ms/item 3.77
+generator features  items 3072    time 16s          ms/item 3.77
+generator features  items 4096    time 20s          ms/item 3.78
+generator features  items 5120    time 24s          ms/item 3.77
+generator features  items 6144    time 28s          ms/item 3.78
+generator features  items 7168    time 32s          ms/item 3.79
+generator features  items 8192    time 36s          ms/item 3.78
+generator features  items 9216    time 39s          ms/item 3.81
+generator features  items 10240   time 43s          ms/item 3.74
+generator features  items 11264   time 47s          ms/item 3.75
+generator features  items 12288   time 51s          ms/item 3.76
+generator features  items 13312   time 55s          ms/item 3.78
+generator features  items 14336   time 59s          ms/item 3.79
+generator features  items 15360   time 1m 03s       ms/item 3.77
+generator features  items 16384   time 1m 06s       ms/item 3.74
+generator features  items 17408   time 1m 10s       ms/item 3.80
+generator features  items 18432   time 1m 14s       ms/item 3.76
+generator features  items 19456   time 1m 18s       ms/item 3.75
+generator features  items 20480   time 1m 22s       ms/item 3.77
+generator features  items 21504   time 1m 26s       ms/item 3.78
+generator features  items 22528   time 1m 30s       ms/item 3.77
+generator features  items 23552   time 1m 33s       ms/item 3.79
+generator features  items 24576   time 1m 37s       ms/item 3.78
+generator features  items 25600   time 1m 41s       ms/item 3.77
+generator features  items 26624   time 1m 45s       ms/item 3.84
+generator features  items 27648   time 1m 49s       ms/item 3.79
+generator features  items 28672   time 1m 53s       ms/item 3.77
+generator features  items 29696   time 1m 57s       ms/item 3.78
+generator features  items 30720   time 2m 01s       ms/item 3.77
+generator features  items 31744   time 2m 05s       ms/item 3.80
+generator features  items 32768   time 2m 08s       ms/item 3.88
+generator features  items 33792   time 2m 12s       ms/item 3.82
+generator features  items 34816   time 2m 16s       ms/item 3.83
+generator features  items 35840   time 2m 20s       ms/item 3.81
+generator features  items 36864   time 2m 24s       ms/item 3.82
+generator features  items 37888   time 2m 28s       ms/item 3.80
+generator features  items 38912   time 2m 32s       ms/item 3.79
+generator features  items 39936   time 2m 36s       ms/item 3.75
+generator features  items 40960   time 2m 40s       ms/item 3.74
+generator features  items 41984   time 2m 43s       ms/item 3.75
+generator features  items 43008   time 2m 47s       ms/item 3.73
+generator features  items 44032   time 2m 51s       ms/item 3.82
+generator features  items 45056   time 2m 55s       ms/item 3.74
+generator features  items 46080   time 2m 59s       ms/item 3.74
+generator features  items 47104   time 3m 03s       ms/item 3.74
+generator features  items 48128   time 3m 06s       ms/item 3.75
+generator features  items 49152   time 3m 10s       ms/item 3.73
+generator features  items 50000   time 3m 14s       ms/item 3.98
+{"results": {"kid50k_full": 0.02083561383187771}, "metric": "kid50k_full", "total_time": 194.24683737754822, "total_time_str": "3m 14s", "num_gpus": 1, "snapshot_pkl": "/workspace/pkl/clean-001612-Gema.pkl", "timestamp": 1787703932.5046732}
+
+Calculating pr50k3_full...
+generator features  items 1024    time 7s           ms/item 6.84
+generator features  items 2048    time 11s          ms/item 4.05
+generator features  items 3072    time 15s          ms/item 4.04
+generator features  items 4096    time 19s          ms/item 4.06
+generator features  items 5120    time 24s          ms/item 4.05
+generator features  items 6144    time 28s          ms/item 4.03
+generator features  items 7168    time 32s          ms/item 4.04
+generator features  items 8192    time 36s          ms/item 4.05
+generator features  items 9216    time 40s          ms/item 4.06
+generator features  items 10240   time 44s          ms/item 4.04
+generator features  items 11264   time 48s          ms/item 4.04
+generator features  items 12288   time 53s          ms/item 4.03
+generator features  items 13312   time 57s          ms/item 4.05
+generator features  items 14336   time 1m 01s       ms/item 4.05
+generator features  items 15360   time 1m 05s       ms/item 4.05
+generator features  items 16384   time 1m 09s       ms/item 4.04
+generator features  items 17408   time 1m 13s       ms/item 4.09
+generator features  items 18432   time 1m 17s       ms/item 4.04
+generator features  items 19456   time 1m 22s       ms/item 4.06
+generator features  items 20480   time 1m 26s       ms/item 4.05
+generator features  items 21504   time 1m 30s       ms/item 4.05
+generator features  items 22528   time 1m 34s       ms/item 4.04
+generator features  items 23552   time 1m 38s       ms/item 4.06
+generator features  items 24576   time 1m 42s       ms/item 4.05
+generator features  items 25600   time 1m 47s       ms/item 4.11
+generator features  items 26624   time 1m 51s       ms/item 4.05
+generator features  items 27648   time 1m 55s       ms/item 4.05
+generator features  items 28672   time 1m 59s       ms/item 4.03
+generator features  items 29696   time 2m 03s       ms/item 4.05
+generator features  items 30720   time 2m 07s       ms/item 4.05
+generator features  items 31744   time 2m 11s       ms/item 4.06
+generator features  items 32768   time 2m 16s       ms/item 4.04
+generator features  items 33792   time 2m 20s       ms/item 4.11
+generator features  items 34816   time 2m 24s       ms/item 4.05
+generator features  items 35840   time 2m 28s       ms/item 4.05
+generator features  items 36864   time 2m 32s       ms/item 4.06
+generator features  items 37888   time 2m 36s       ms/item 4.06
+generator features  items 38912   time 2m 41s       ms/item 4.04
+generator features  items 39936   time 2m 45s       ms/item 4.07
+generator features  items 40960   time 2m 49s       ms/item 4.06
+generator features  items 41984   time 2m 53s       ms/item 4.10
+generator features  items 43008   time 2m 57s       ms/item 4.06
+generator features  items 44032   time 3m 01s       ms/item 4.06
+generator features  items 45056   time 3m 06s       ms/item 4.06
+generator features  items 46080   time 3m 10s       ms/item 4.07
+generator features  items 47104   time 3m 14s       ms/item 4.05
+generator features  items 48128   time 3m 18s       ms/item 4.06
+generator features  items 49152   time 3m 22s       ms/item 4.05
+generator features  items 50000   time 3m 26s       ms/item 4.37
+{"results": {"pr50k3_full_precision": 0.5520200133323669, "pr50k3_full_recall": 0.036036036908626556}, "metric": "pr50k3_full", "total_time": 226.56657886505127, "total_time_str": "3m 47s", "num_gpus": 1, "snapshot_pkl": "/workspace/pkl/clean-001612-Gema.pkl", "timestamp": 1787704159.0714195}
+
+Exiting...
+=== POD JOB COMPLETE ===

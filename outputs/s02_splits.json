@@ -1,0 +1,28 @@
+{
+  "seed": 42,
+  "RP": {
+    "holdout_files": 28,
+    "holdout_eyes": 28,
+    "dev_files": 111,
+    "dev_eyes": 106,
+    "target": 28
+  },
+  "Healthy": {
+    "holdout_files": 207,
+    "holdout_eyes": 197,
+    "dev_files": 817,
+    "dev_eyes": 766,
+    "target": 206
+  },
+  "prevalence": {
+    "cohort": 0.11951848667239896,
+    "holdout": 0.11914893617021277,
+    "dev": 0.11961206896551724
+  },
+  "folds": {
+    "n": 25,
+    "rp_val_min": 21,
+    "rp_val_max": 24,
+    "rp_val_mean": 22.2
+  }
+}
