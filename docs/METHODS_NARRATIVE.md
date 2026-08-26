@@ -590,6 +590,47 @@ raises rather than substituting a feature space: the primary endpoint requires
 RETFound, and a pixel-space or Inception-space result would not be a weaker
 version of it but an uninformative one.
 
+### C4. SWD, carried over from the v3 paper, returns the same null with a scale attached
+
+The v3 paper reported Sliced Wasserstein Distance alongside FID and KID
+(`metrics_code/realism_verfication_metrics.ipynb`). It was ported here as
+`scripts/s09_swd.py` because its inductive bias is genuinely different: it
+compares multi-scale raw pixel patch statistics under random projections and
+never touches Inception. A fourth Inception-derived metric would have added
+nothing to the C1 disagreement; a non-Inception one can.
+
+SWD is reported against two anchors, because the raw value is uninterpretable
+without them. The first is a **noise floor**, the score of a reference set
+against itself under independent patch draws, which is 0.0186 rather than zero.
+The second is the **real-to-real** score between `clean_111` and `leak_111`, two
+genuine reference sets differing in 28 of their 111 images.
+
+| comparison | SWD | excess over floor |
+|---|---|---|
+| noise floor, `clean_111` against itself | 0.0186 | — |
+| `clean_111` against `leak_111`, real to real | 0.0198 | +0.0012 |
+| `synth_clean` psi 0.7 | 0.0211 | +0.0025 |
+| `synth_clean` psi 1.0 | 0.0216 | +0.0030 |
+| `synth_leak` psi 0.7 | 0.0217 | +0.0031 |
+| `synth_leak` psi 1.0 | 0.0225 | +0.0039 |
+
+Two conclusions follow, and they are different in kind. SWD **does** separate
+synthetic from real: every pool sits two to three times further above the floor
+than two real reference sets sit from each other. SWD **does not** separate the
+two generators: the gap between the `g_clean` and `g_leak` pools is 0.0009, which
+is smaller than the real-to-real difference and twenty-two times smaller than the
+noise floor.
+
+The direction, insofar as one can be read, places `g_clean` ahead on both
+references, agreeing with precision and disagreeing with KID. Four instruments
+have now been applied to the same question and no two of them agree on an
+ordering, while every margin sits at or below the resolution of the reference
+set. The null in C1 is strengthened rather than overturned.
+
+The noise floor is not sample-size matched, being computed on 111 images against
+111 where the pool comparisons are 1,110 against 111; it is reported as an order
+of magnitude, not a critical value.
+
 ---
 
 ## Immediate actions arising
