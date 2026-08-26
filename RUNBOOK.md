@@ -41,15 +41,15 @@ Every script with non-trivial logic has `--self-test`. Run it before trusting it
 ## The pending run
 
 `s05` is the only thing left that takes real time. 70 fits without `synth_leak`,
-100 with it. The arm is routed but **not** in `config.ARMS`, so it is opt-in:
+100 with it. The arm is routed but **not** in `config.ARMS`, so it is opt-in.
+
+Decided: **run the five-arm form.** The reasoning is in
+`docs/FINAL_PLAN.md` §Arm decision. Short version — F1 and F3 show the two
+generators are indistinguishable as distributions, and `synth_leak` is the only
+thing that carries that finding through to downstream accuracy.
 
 ```bash
-# four arms, as config.ARMS stands
-./venv/bin/python scripts/s05_classifier.py --tag main \
-  --synth-clean-dir gan_data/synth_clean_psi1.0 \
-  --pca-dir gan_data/pca_pool
-
-# five arms, adding the contaminated generator (contrast P2)
+# THE RUN — five arms, including the contaminated generator (contrast P2)
 ./venv/bin/python scripts/s05_classifier.py --tag main5 \
   --arms real_only oversample pca_sampler synth_clean synth_leak \
   --synth-clean-dir gan_data/synth_clean_psi1.0 \
@@ -57,7 +57,17 @@ Every script with non-trivial logic has `--self-test`. Run it before trusting it
   --pca-dir gan_data/pca_pool
 ```
 
-Decide before launching: adding the arm afterwards re-runs the whole sweep.
+`config.ARMS` deliberately stays at four, so the fifth arm is visible in the
+command that produced the result rather than buried in config. Adding an arm
+after a sweep re-runs the sweep, which is why the decision is made here first.
+
+Before launching, in the same shell:
+
+```bash
+export SSL_CERT_FILE=$(./venv/bin/python -c "import certifi;print(certifi.where())")
+```
+
+without it `build_model` dies fetching the ImageNet weights.
 
 ## Reading the results
 

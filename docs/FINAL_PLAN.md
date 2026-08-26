@@ -100,7 +100,7 @@ everywhere it appears and supports no clean claim.
 beat oversampling" — the question the prior work never asked and the reviewer
 asks first. S1 and S2 are descriptive, unadjusted intervals, labelled as such.
 
-### The leakage result — already measured, zero GPU
+### The leakage result
 
 The prior study's inflation came from **evaluation-protocol leakage**: synthetic
 images were merged into the dataset *before* the 5-fold split, so each validation
@@ -111,10 +111,59 @@ folds and rerunning collapses the effect —
 oversampling. That is the paper's leakage result and it cost nothing.
 
 **Generator-mediated leakage** — training the generator itself on the holdout
-eyes — is a separate mechanism and is **not measured here**. It needs a second
-matched generator (`leak_111`: 28 holdout + 83 dev, N matched at 111) and there
-is no budget for it. Stated explicitly as future work, with the design written
-down so the next run is a single command.
+eyes — is a separate mechanism, and it **is now measured**. The second matched
+generator was trained (`g_leak`: 28 holdout + 83 dev, N matched at 111, and 58
+of 61 `training_options.json` keys identical to `g_clean` — the two runs differ
+only in `--data`). Two results follow from it.
+
+*Distribution level (F1).* Each generator is scored against each 111-image
+reference set, giving a 2x2. If training on the holdout conferred an advantage,
+`g_leak` would score better against `leak_111` than `g_clean` does, by more than
+the reference sets differ from each other. It does not: the KID gap between the
+two generators on a fixed reference is 0.00017, an order of magnitude under the
+gap induced by swapping the reference set. The 2x2 is reported in full, since
+the near-diagonal structure is the result.
+
+*Control (F3).* The one snapshot where the two generators genuinely diverge is
+806 kimg, where `g_leak` precision falls to 0.0003 and its KID rises to 0.0673.
+This is not leakage; it is a training instability, and the ADA augment
+probability collapsing in the same window identifies it as such (Fig. 1). The
+`g_clean` backfill at the matched kimg is what licenses that reading, which is
+why the backfill was run.
+
+The classifier-level counterpart is the `synth_leak` arm in `s05`, which is
+wired but **not** in `config.ARMS` — see §Arm decision.
+
+### Arm decision — `synth_leak`
+
+`s05` sweeps `config.ARMS`. An arm added after a sweep re-runs the whole sweep,
+so the arm list is fixed once, before launch, and the decision is recorded here
+rather than inferred from a command line.
+
+**Include the arm.** It costs 70 fits to 100, no GPU, and it is the only thing
+that carries the generator-mediated-leakage question across to the endpoint a
+clinical reader cares about. F1 and F3 establish that `g_leak` and `g_clean` are
+indistinguishable *as distributions*; without `synth_leak` the paper cannot say
+whether that indistinguishability survives into downstream accuracy, which is
+precisely the inference the prior work got wrong. A reviewer who accepts the
+distribution result will ask the classifier question next, and the answer costs
+one flag decided now versus a full re-run decided later.
+
+The arm is **secondary and descriptive**, reported with unadjusted intervals and
+labelled as such. It does not enter the primary S1 contrast and does not change
+the multiplicity accounting, because the primary endpoint was prespecified as
+`synth_clean` versus `oversample` on the blind eyes and stays that way.
+
+Launch is therefore:
+
+```
+python3 scripts/s05_classifier.py \
+  --arms real_only oversample pca_sampler synth_clean synth_leak \
+  --synth-leak-dir <psi1.0 leak sample dir>
+```
+
+`config.ARMS` stays at four, so the default sweep remains the prespecified one
+and the fifth arm is visible in the command that produced it.
 
 ### Dropped from the previous plan
 
@@ -123,7 +172,6 @@ down so the next run is a single command.
 | Stage-2 fundus corpus pretrain | not what was achieved — v3 went ffhq256 → RP directly. Deletes the 4,972-image download and the contamination-audit section |
 | arm E `synth_scratch` | StyleGAN2-ADA from random init on 111 images at 256px produces noise at any budget reachable here |
 | the `train.py:313-315` patch | only mattered because E did not resume while F did. Both remaining generators resume, so the `ada_kimg`/`ema_rampup` shift hits identically and cancels |
-| arm F_leak | see above — future work, not affordable |
 | generator seeds ×3 | n=1. See §6 |
 | scarcity sweep | 28 blind eyes cannot resolve a curve |
 | NCG | appendix at most |

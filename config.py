@@ -123,7 +123,7 @@ PSI_LEVELS = [0.7, 1.0]
 #   real_only     --                                     floor
 #   oversample    minority duplicated to balance         balance, no new pixels
 #   pca_sampler   linear manifold samples (k=22, 4.5e6 floats)  cheap comparator
-#   synth_clean   StyleGAN2-ADA (~3e7 params), the ONE   the generator as
+#   synth_clean   StyleGAN2-ADA (~2.5e7 params), the ONE   the generator as
 #                 new run, ffhq256 -> 111 dev eyes       normally used
 #
 # Prespecified contrasts:
@@ -132,7 +132,7 @@ PSI_LEVELS = [0.7, 1.0]
 #                                     and the only confirmatory test.
 #   S1  oversample vs real_only    -- class balance alone.        descriptive
 #   S2  pca_sampler vs synth_clean -- does a 22-direction linear
-#       subspace match 3e7 weights?                            descriptive
+#       subspace match 2.5e7 weights?                            descriptive
 ARMS = ["real_only", "oversample", "pca_sampler", "synth_clean"]
 
 # Historical row, not an arm. The v3 generator saw all 139 real RP including

@@ -82,15 +82,19 @@ sample size. Generator-level replication is the first thing a follow-up buys.
 | dropped | why |
 |---|---|
 | arm `synth_scratch` | StyleGAN2-ADA from random init on 111 images at 256px is noise at any budget reachable in 20 GPU-hours |
-| arm `synth_leak` / contrast P2 | needs a second matched generator; no budget. `gan_data/leak_111.zip` is **already built** and kept, so the follow-up is one command |
 | stage-2 fundus corpus pretrain | not what was achieved — v3 went ffhq256 -> RP directly. Deletes the 4,972-image download and the contamination audit |
 | the `train.py:313-315` patch | only mattered when one generator resumed and another did not. The single remaining generator resumes, so the `ada_kimg`/`ema_rampup` shift cancels |
 | generator seeds x3 | see n=1 above |
 | scarcity sweep | 28 blind eyes cannot resolve a curve |
 
-**Generator-mediated leakage is not measured here.** It is a distinct mechanism
-from the evaluation-protocol leakage this study does measure, and it is stated
-as future work with the design written down.
+**Generator-mediated leakage is measured here.** `g_leak` was trained on the
+28 holdout eyes plus 83 dev eyes, N matched at 111, under a recipe identical to
+`g_clean` in 58 of 61 `training_options.json` keys. At the distribution level
+the 2x2 cross-score is near-diagonal (F1), and the one snapshot where the
+generators diverge is a training instability the ADA augment trace identifies
+(F3). At the classifier level the arm exists as `synth_leak`, routed through
+`s05 --arms ... synth_leak --synth-leak-dir`; it is deliberately **not** in
+`config.ARMS`, because adding an arm after a sweep re-runs the sweep.
 
 ---
 
