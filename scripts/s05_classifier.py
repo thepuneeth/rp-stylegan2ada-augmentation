@@ -150,6 +150,18 @@ POOL_ARMS = ("synthetic", "synth_clean", "synth_leak", "pca_sampler")
 PLAIN_ARMS = ("real_only", "imbalanced", "oversample", "weighted", "focal")
 
 
+def load_pool(d):
+    """Sorted image paths in a pool directory; empty list if there is none.
+
+    Module level so s11_gradcam can build the same pools s05 does, rather than
+    keeping a second copy that could drift out of step.
+    """
+    if not d or not os.path.isdir(d):
+        return []
+    return sorted(os.path.join(d, f) for f in os.listdir(d)
+                  if not f.startswith("."))
+
+
 def build_train_items(dev, arm, dose, pool, rng):
     """Returns (items, sample_weights_or_None, loss_name).
 
@@ -360,12 +372,6 @@ def main():
     holdout_items = ([(os.path.join(C.HEALTHY_DIR, f), 0) for f in sorted(hold["Healthy"])]
                      + [(os.path.join(C.REAL_RP_DIR, f), 1) for f in sorted(hold["RP"])])
     hold_keys = eye_keys(holdout_items, eye_labels)
-
-    def load_pool(d):
-        if not d or not os.path.isdir(d):
-            return []
-        return sorted(os.path.join(d, f) for f in os.listdir(d)
-                      if not f.startswith("."))
 
     # One pool per pool-arm. A pool-arm with no directory is skipped loudly
     # rather than silently degrading to real_only.

@@ -122,7 +122,8 @@ def _train(S, items, loss_name, weights, backbone, device, seed):
     else:
         crit = nn.CrossEntropyLoss()
     opt = torch.optim.Adam(model.parameters(), lr=C.LR)
-    dl = DataLoader(S.ImgDS(items, S.TRAIN_TF), batch_size=C.BATCH, shuffle=True)
+    dl = DataLoader(S.ImgDS(items, S.TRAIN_TF), batch_size=C.BATCH, shuffle=True,
+                    **S.loader_kw(device, seed))
     model.train()
     for _ in range(C.EPOCHS):
         for x, y in dl:
@@ -134,13 +135,21 @@ def _train(S, items, loss_name, weights, backbone, device, seed):
 def main(a):
     import s05_classifier as S
     from torchvision import models
-    device = C.DEVICE if torch.backends.mps.is_available() else "cpu"
+    device = S.pick_device()
     dev = json.load(open(os.path.join(C.SPLITS, "dev.json")))
     hold = json.load(open(os.path.join(C.SPLITS, "holdout.json")))
     pools = {"synth_clean": S.load_pool(a.synth_clean_dir) if a.synth_clean_dir else [],
              "synth_leak": S.load_pool(a.synth_leak_dir) if a.synth_leak_dir else [],
              "pca_sampler": S.load_pool(a.pca_dir) if a.pca_dir else []}
     rp_hold = [os.path.join(C.REAL_RP_DIR, f) for f in sorted(hold["RP"])][:a.n_images]
+
+    # The null on-disc fraction. A CAM that attends to NOTHING in particular --
+    # uniform over the frame -- scores the disc's share of the image, not zero.
+    # Without this number an on-disc fraction of 0.8 cannot be read as "on the
+    # retina": if the disc covers 80% of the frame, 0.8 IS indifference.
+    disc_area = float(np.mean([disc_mask(p, C.IMG_SZ).mean() for p in rp_hold]))
+    print(f"null: disc covers {disc_area:.3f} of frame "
+          f"(a uniform CAM scores this)")
 
     res, fig_rows = {}, []
     for arm in a.arms:
@@ -158,7 +167,8 @@ def main(a):
         res[arm] = {"on_disc_fraction_mean": float(np.nanmean(fracs)),
                     "on_disc_fraction": fracs, "n_train": len(items)}
         fig_rows.append((arm, rp_hold, cams))
-        print(f"  on-disc CAM mass {np.nanmean(fracs):.3f}")
+        print(f"  on-disc CAM mass {np.nanmean(fracs):.3f} "
+              f"(null {disc_area:.3f}, lift {np.nanmean(fracs)-disc_area:+.3f})")
 
     os.makedirs(os.path.join(C.ROOT, "figures"), exist_ok=True)
     n = len(rp_hold)
@@ -175,7 +185,8 @@ def main(a):
         ax[r, 0].set_ylabel(arm, fontsize=8)
     fig.savefig(os.path.join(C.ROOT, "figures", "fig_gradcam.png"),
                 dpi=200, bbox_inches="tight")
-    json.dump(res, open(os.path.join(C.OUT, "s11_gradcam.json"), "w"), indent=2)
+    json.dump({"disc_area_null": disc_area, "arms": res},
+              open(os.path.join(C.OUT, "s11_gradcam.json"), "w"), indent=2)
     print("wrote figures/fig_gradcam.png and outputs/s11_gradcam.json")
 
 
