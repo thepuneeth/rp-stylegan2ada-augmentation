@@ -227,6 +227,11 @@ PRIMARY_FEATURE_SPACE = "retfound"
 
 DEVICE = "mps"
 
+# DataLoader worker processes. 0 means decode in the main process, which on the
+# local box measured 18.1 ms per image with the GPU idle behind it. Set from the
+# environment so one pod recipe fits any core count: S05_WORKERS=8 etc.
+NUM_WORKERS = int(os.environ.get("S05_WORKERS", "0"))
+
 # ------------------------------------------------------------- novelty metric
 # Appendix only. The interval resamples size-matched synthetic subsets from one
 # fixed pool, so it captures subset-selection variability only -- not variation

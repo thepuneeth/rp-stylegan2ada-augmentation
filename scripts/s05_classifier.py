@@ -190,6 +190,54 @@ def build_train_items(dev, arm, dose, pool, rng):
     raise ValueError(f"unrouted arm '{arm}' -- add it to build_train_items")
 
 
+def pick_device():
+    """cuda > mps > cpu.
+
+    The previous form was `C.DEVICE if torch.backends.mps.is_available() else
+    "cpu"`, which silently selected CPU on a CUDA box -- the sweep would have
+    run, slowly, and reported device="cpu" in the output JSON.
+    """
+    if torch.cuda.is_available():
+        return "cuda"
+    if torch.backends.mps.is_available():
+        return C.DEVICE
+    return "cpu"
+
+
+def loader_kw(device, seed, train=True):
+    """DataLoader settings.
+
+    num_workers was 0, so JPEG decode and augmentation ran serially in the main
+    process and the GPU waited on one core: a measured 18.1 ms per image, of
+    which most was decode. Parallel decode is the single change that makes this
+    sweep affordable.
+
+    Note this shifts the augmentation RNG. With workers, each worker seeds its
+    own torch RNG rather than drawing from the parent, so the sequence of random
+    crops and flips differs from a num_workers=0 run. The draws are still a
+    valid sample and still reproducible -- the loader generator is pinned to C.SEED + seed below -- but fits are NOT bit-identical to the earlier serial run. The
+    endpoint averages over C seeds, so this changes the noise, not the estimate.
+    """
+    if not C.NUM_WORKERS:
+        return {"num_workers": 0}
+    kw = {"num_workers": C.NUM_WORKERS,
+          "pin_memory": device == "cuda",
+          "prefetch_factor": 4}
+    if train:
+        # persistent_workers ONLY on the training loader, which is reused across
+        # C.EPOCHS. Setting it on the short-lived eval loader too leaked worker
+        # processes: run_once builds fresh loaders on every fit, and at ~100
+        # fits x 8 workers the sweep died with "[Errno 24] Too many open files".
+        kw["persistent_workers"] = True
+        # A seeded generator is enough: torch derives each worker's seed as
+        # base_seed + worker_id from this generator, so worker RNG is already
+        # deterministic. An explicit worker_init_fn would be redundant, and a
+        # lambda one is not picklable under the spawn start method.
+        g = torch.Generator(); g.manual_seed(C.SEED + seed)
+        kw["generator"] = g
+    return kw
+
+
 def run_once(items, loss_name, weights, holdout_items, backbone, device, seed):
     torch.manual_seed(seed)
     np.random.seed(seed)
@@ -208,7 +256,7 @@ def run_once(items, loss_name, weights, holdout_items, backbone, device, seed):
 
     opt = torch.optim.Adam(model.parameters(), lr=C.LR)
     dl = DataLoader(ImgDS(items, TRAIN_TF), batch_size=C.BATCH, shuffle=True,
-                    num_workers=0)
+                    **loader_kw(device, seed))
 
     model.train()
     for _ in range(C.EPOCHS):
@@ -219,10 +267,18 @@ def run_once(items, loss_name, weights, holdout_items, backbone, device, seed):
             loss.backward()
             opt.step()
 
+    # Tear the training workers down before eval. Without this the loader's
+    # worker processes survive until GC, and across a 100-fit sweep the file
+    # descriptors accumulate until the process hits its limit.
+    if hasattr(dl, "_iterator") and dl._iterator is not None:
+        dl._iterator._shutdown_workers()
+    del dl
+
     model.eval()
     probs, ys = [], []
     with torch.no_grad():
-        for x, y in DataLoader(ImgDS(holdout_items, EVAL_TF), batch_size=C.BATCH):
+        for x, y in DataLoader(ImgDS(holdout_items, EVAL_TF), batch_size=C.BATCH,
+                               **loader_kw(device, seed, train=False)):
             probs.append(torch.softmax(model(x.to(device)), 1)[:, 1].cpu().numpy())
             ys.append(y.numpy())
     return np.concatenate(probs), np.concatenate(ys)
@@ -292,7 +348,7 @@ def main():
 
     if a.epochs is not None:
         C.EPOCHS = a.epochs
-    device = C.DEVICE if torch.backends.mps.is_available() else "cpu"
+    device = pick_device()
     with open(os.path.join(C.SPLITS, "dev.json")) as fh:
         dev = json.load(fh)
     with open(os.path.join(C.SPLITS, "holdout.json")) as fh:
