@@ -2,7 +2,7 @@
 Paper figures, built from whatever outputs already exist.
 
 Every figure is skipped with a message rather than crashing if its inputs are
-missing, so this runs usefully before s05 and s06 have produced anything.
+missing, so this runs usefully before s05 and s09 have produced anything.
 
     ../venv/bin/python scripts/s10_figures.py            # all available
     ../venv/bin/python scripts/s10_figures.py --only curves
