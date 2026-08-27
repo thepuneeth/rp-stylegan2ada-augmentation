@@ -27,7 +27,7 @@ Both are fixed here.
   Feature: crop to the illuminated field of view, grayscale, resize, zero-mean
   and unit-norm. The dot product between two rows is then Pearson correlation.
   Cropping removes the shared black canvas, which is what inflated the raw
-  distances. Calibration in s01a compared this against whole-frame, high-pass
+  distances. A calibration compared this against whole-frame, high-pass
   and gradient variants: cropping recovered all five independently confirmed
   duplicate pairs with ZERO false positives above the weakest of them, while
   high-pass admitted 1225 and gradient 391.

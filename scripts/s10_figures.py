@@ -11,7 +11,7 @@ Figures:
   curves     training trajectories for both arms + the ADA augment probability.
              This is the F3 figure: the contaminated arm collapses at 806 kimg
              where the matched clean arm improves.
-  samples    a grid of real / synth_clean / synth_leak / pca_sampler images.
+  samples    a grid of real / synth_clean / synth_leak images.
   crossscore the F1 2x2, each generator against both reference sets.
   swd        SWD against its noise floor and the real-to-real anchor.
 """
@@ -105,8 +105,7 @@ def fig_curves():
 def fig_samples(n=6, seed=C.SEED):
     srcs = [("Real RP (dev)", C.REAL_RP_DIR),
             ("synth_clean", os.path.join(C.GAN_DATA, "synth_clean_psi1.0")),
-            ("synth_leak", os.path.join(C.GAN_DATA, "synth_leak_psi1.0")),
-            ("pca_sampler", os.path.join(C.GAN_DATA, "pca_pool"))]
+            ("synth_leak", os.path.join(C.GAN_DATA, "synth_leak_psi1.0"))]
     srcs = [(t, d) for t, d in srcs if os.path.isdir(d)]
     if not srcs:
         print("  skip samples: no pools found"); return

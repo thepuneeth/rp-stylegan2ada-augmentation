@@ -102,8 +102,7 @@ break the source shortcut — it may reinforce it. Two consequences, both of
 which the study must state rather than hide:
 
 1. Stage 2 is justified as *modality learning*, not as domain diversification.
-2. The `colour_lr` control arm in `s05` exists precisely to detect this. If
-   every deep arm lands near AUC 0.947, the benchmark is saturated and no
+2. If every deep arm lands near AUC 0.947, the benchmark is saturated and no
    augmentation difference is interpretable regardless of generator quality.
 
 A genuinely multi-source corpus would be stronger. See below.

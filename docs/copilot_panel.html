@@ -80,7 +80,7 @@ label.task.done .t{color:var(--dim);text-decoration:line-through}
     <div class="node">111 dev eyes</div><span class="arr">›</span>
     <div class="node gpu">g_clean · ffhq256<br><b>3,000 kimg · 18.8 h</b></div><span class="arr">›</span>
     <div class="node">ψ 0.7 / 1.0<br>1,500 each</div><span class="arr">›</span>
-    <div class="node">4 arms · RETFound<br>Alaa + Meehan</div><span class="arr">›</span>
+    <div class="node">4 arms · SWD<br>Grad-CAM</div><span class="arr">›</span>
     <div class="node blind">28 blind eyes<br>197 healthy eyes</div>
   </div>
 </section>
@@ -126,9 +126,8 @@ label.task.done .t{color:var(--dim);text-decoration:line-through}
     <tr><th></th><th>arm</th><th>training-set addition</th><th class="num">GPU</th></tr>
     <tr><td><b>A</b></td><td class="mono">real_only</td><td>—</td><td class="num">0</td></tr>
     <tr><td><b>B</b></td><td class="mono">oversample</td><td>minority duplicated to balance</td><td class="num">0</td></tr>
-    <tr><td><b>D</b></td><td class="mono">pca_sampler</td><td>linear manifold, ~1e4 params</td><td class="num">0</td></tr>
     <tr><td><b>C</b></td><td class="mono"><b>synth_clean</b></td><td>the one new run, ~3e7 params</td><td class="num"><b>18.8 h</b></td></tr>
-    <tr><td></td><td class="mono">legacy_v3</td><td><span class="tag t-bad">contaminated</span> historical row, not an arm</td><td class="num">0</td></tr>
+    <tr><td></td><td class="mono">synth_leak</td><td><span class="tag t-bad">contaminated</span> size-matched generator, opt-in (contrast P2)</td><td class="num">0</td></tr>
   </table>
   <p class="foot">Same 111 real RP into every arm. Same 28 generator-blind eyes out.</p>
 </section>
@@ -193,7 +192,7 @@ label.task.done .t{color:var(--dim);text-decoration:line-through}
     <tr><td class="kill">train.py:313-315 patch</td><td>only mattered because E didn't resume while F did. Both remaining runs resume, so the shift cancels</td></tr>
     <tr><td class="kill">arm F_leak</td><td>needs a second matched generator. <code>leak_111.zip</code> is built and kept for the follow-up</td></tr>
     <tr><td class="kill">3 generator seeds</td><td>n=1, with a scoped claim and a stated limitation instead</td></tr>
-    <tr><td class="kill">scarcity sweep · NCG</td><td>28 blind eyes cannot resolve a curve; NCG to the appendix</td></tr>
+    <tr><td class="kill">scarcity sweep</td><td>28 blind eyes cannot resolve a curve</td></tr>
   </table>
 </section>
 
@@ -261,10 +260,6 @@ const tasks = [
   ["Implement arms A / B / D in s05_classifier.py", "4 arms route off config.ARMS", 0],
   ["s05_classifier.py consumes dev_folds.json", "no ad-hoc splitting left in the script", 0],
   ["Eye-level evaluator + cluster bootstrap", "207 files collapse to 197 healthy eyes", 0],
-  ["RETFound embedding + 2 sanity checks", "dup pairs mutual NN; RP separates from non-RP", 0],
-  ["Alaa a-precision / b-recall / authenticity", "runs on legacy pool BEFORE any GPU spend", 0],
-  ["Meehan C_T three-sample test", "runs on legacy pool BEFORE any GPU spend", 0],
-  ["Power simulation script", "regenerates the CI [0.9204, 0.9850]", 0],
   ["Confirm UGHS eligibility", "student first author + in-person Dallas", 0],
   ["THE GPU DAY — approval, gate, 3,000 kimg", "15 snapshots synced and md5-matched locally", 0],
   ["Select snapshot offline", "lowest FID among snapshots >= 2,000 kimg", 0],

@@ -10,23 +10,17 @@ Unit of resampling is the EYE, matching config.EVAL_UNIT. Per arm, the five
 seeds are averaged into one probability per eye, so a contrast compares two
 score vectors over the same 225 eyes.
 
-Read the output with the sampling geometry in mind. The holdout carries 28 RP
-eyes, so eye-level AUC is coarsely quantised: in a check on the dose=5.0
-contrast, 30.4% of bootstrap resamples returned a difference of EXACTLY zero
-because both arms ranked every resampled eye identically. Intervals therefore
-pin to 0.0000 on one side. That is the ceiling effect reaching the inference,
-not a defect in the estimator.
-
-The permutation is deliberately conservative. Swapping whole arm assignments
-within an eye breaks the strong across-eye correlation the two arms share, so
-the null is more variable than the paired difference and p runs high. It will
-not manufacture an effect; it can miss a small true one.
+Two prespecified contrasts:
+  P1  synth_clean vs oversample     -- does the generator beat copying.
+  P2  synth_leak vs synth_clean     -- generator-mediated leakage: did training
+                                       the generator on the holdout help.
 
 Two tests per contrast:
   BCa cluster bootstrap on the AUC difference -- interval on the effect.
   Paired permutation that sign-flips ARM LABELS WITHIN AN EYE and recomputes
-  the AUC difference. Sign-flipping per-eye score differences instead would
-  test whether mean predicted probability shifts, which is a different claim.
+  the AUC difference. With 28 RP eyes the eye-level AUC is coarsely quantised,
+  so intervals can pin to 0.0000 on one side; that is the ceiling effect
+  reaching the inference, not a defect in the estimator.
 """
 import json, os, sys
 import numpy as np
@@ -95,8 +89,6 @@ def main():
 
     pools = {}
     for r in d["runs"]:
-        if r["arm"] == "colour_lr":
-            continue
         pools.setdefault((r["arm"], r["dose"]), []).append(np.asarray(r["probs"]))
     scores = {}
     for k, v in pools.items():
@@ -119,10 +111,6 @@ def main():
         if ("synth_leak", dose) in scores and ("synth_clean", dose) in scores:
             tests.append((f"synth_leak vs synth_clean @dose={dose}",
                           ("synth_leak", dose), ("synth_clean", dose)))
-    # Every arm against doing nothing.
-    for arm in ("oversample", "pca_sampler", "synth_clean", "synth_leak"):
-        k = best(arm) if arm != "oversample" else ("oversample", None)
-        tests.append((f"{arm}(best) vs real_only", k, ("real_only", None)))
 
     out = {}
     print(f"\n{'contrast':44}{'dAUC':>9}{'95% CI':>22}{'p':>9}")

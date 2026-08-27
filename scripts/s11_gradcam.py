@@ -8,9 +8,8 @@ of the synthesized images" -- shortcut learning on synthetic border artefacts,
 fought at the time with aggressive augmentation.
 
 That makes the question here: does training on synthetic images move the
-classifier's attention OFF the retina? It matters because s05's own colour_lr
-control reaches AUC 0.950 from colour moments alone, so a high AUC is not by
-itself evidence that anything retinal was learned.
+classifier's attention OFF the retina? A high AUC is not by itself evidence
+that anything retinal was learned, so attention is checked directly.
 
 Reported per arm:
   on_disc_fraction   share of CAM mass inside the fundus disc (the retina).
@@ -139,8 +138,7 @@ def main(a):
     dev = json.load(open(os.path.join(C.SPLITS, "dev.json")))
     hold = json.load(open(os.path.join(C.SPLITS, "holdout.json")))
     pools = {"synth_clean": S.load_pool(a.synth_clean_dir) if a.synth_clean_dir else [],
-             "synth_leak": S.load_pool(a.synth_leak_dir) if a.synth_leak_dir else [],
-             "pca_sampler": S.load_pool(a.pca_dir) if a.pca_dir else []}
+             "synth_leak": S.load_pool(a.synth_leak_dir) if a.synth_leak_dir else []}
     rp_hold = [os.path.join(C.REAL_RP_DIR, f) for f in sorted(hold["RP"])][:a.n_images]
 
     # The null on-disc fraction. A CAM that attends to NOTHING in particular --
@@ -199,7 +197,6 @@ if __name__ == "__main__":
     ap.add_argument("--n-images", type=int, default=6)
     ap.add_argument("--synth-clean-dir", default=None)
     ap.add_argument("--synth-leak-dir", default=None)
-    ap.add_argument("--pca-dir", default=None)
     a = ap.parse_args()
     if a.self_test:
         _self_test()

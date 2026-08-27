@@ -1,11 +1,10 @@
 """
 Shared image primitives for the variability study.
 
-Extracted because s01 (eye identity), s01a (metric calibration) and s03
-(novelty metrics) all depend on the SAME crop and the SAME correlation
-feature. s03's distances are only comparable to the duplicate threshold
-calibrated in s01a if the feature is byte-identical -- three copies made that
-an unenforced comment. One definition makes it structural.
+Extracted because eye identity (s01) and any distance compared to the
+duplicate threshold depend on the SAME crop and the SAME correlation feature.
+They are only comparable if the feature is byte-identical, so one definition
+makes that structural rather than an unenforced comment.
 """
 import os
 import sys
@@ -39,7 +38,7 @@ def corr_features(paths, sz=C.CORR_SZ, dtype=np.float64):
     Zero-mean unit-norm FOV-cropped grayscale, one row per path.
 
     Row dot product = Pearson correlation, so 1 - dot is the distance the
-    duplicate threshold (C.CORR_THRESHOLD) was calibrated against in s01a.
+    duplicate threshold (C.CORR_THRESHOLD) was calibrated against.
     Accumulation is always float64; `dtype` sets only the storage precision.
     """
     X = np.empty((len(paths), sz * sz), dtype=dtype)

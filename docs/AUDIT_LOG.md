@@ -499,3 +499,40 @@ is 41.69 at ~3,806 cumulative kimg. Already on the concede list in
 `docs/copilot_panel.html`. `docs/DEFENSE_AGENT_BRIEF.md` updated (§2, §3 tiers,
 §6 concessions 7–8). `docs/FINAL_PLAN_AUDIT.md` left as-is and marked stale on
 budget arithmetic.
+
+---
+
+## 2026-08-26 — Scope reduced to essential analyses
+
+The study is trimmed to the analytic vocabulary of the original v3 paper plus the
+one new claim, on the owner's instruction to keep only the needed analytics.
+
+**Removed from scope (scripts + outputs deleted):** `s01a` duplicate-metric
+calibration, `s03` novelty metrics, `s04b` pca_sampler arm, `s06`
+authenticity / coverage / Meehan C_T, `s07` power simulation. Classifier arms
+`pca_sampler` and `colour_lr` dropped; `s05` reduced from six arms to four
+(`real_only`, `oversample`, `synth_clean`, `synth_leak`). `s12` reduced to the two
+prespecified contrasts P1 and P2. The `gan_data/pca_pool` image directory (1,110
+images) deleted.
+
+**Endpoint change.** The primary endpoint is no longer image-level authenticity /
+β-recall in RETFound space (that apparatus is removed). It is now the downstream
+classifier contrasts P1 (`synth_clean` vs `oversample`) and P2 (`synth_leak` vs
+`synth_clean`), with FID/KID/SWD and the cross-score F1/F3 as distributional
+support and Grad-CAM as the attention check. RETFound is no longer required.
+
+**Living docs rewritten to match:** `README.md`, `RUNBOOK.md`,
+`docs/RUNPOD_RECIPE.md`, `docs/PRETRAIN_CORPUS.md`, `docs/copilot_panel.html`,
+`docs/FINAL_PLAN.md`, `docs/METHODS_NARRATIVE.md` (Part B; Part C section C3, the
+pixel-space `s06` result, removed as out of scope).
+
+**Deleted as superseded:** `docs/JUDGE_REPORT.md`, `docs/FINAL_PLAN_AUDIT.md`,
+`docs/LIT_REVIEW_AND_REPOSITIONING_2026-08-18.md`, `docs/DEFENSE_AGENT_BRIEF.md`.
+
+Prior entries in this append-only log are left intact: they record what was
+genuinely run on their dates. This entry is the correction, not a rewrite of the
+history above it. The `provenance/2026-08-26_pod_s05/` run record (raw pod log +
+runner for the six-arm sweep) was deleted on the owner's instruction as a
+superseded session log; the result it produced survives as
+`outputs/s05_classifier_main5.json`, filtered to the four reported arms, and the
+current run command is in `RUNBOOK.md`.

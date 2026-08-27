@@ -11,7 +11,6 @@ arm sees the identical holdout, so arms are compared paired.
     oversample   random oversampling of real RP  <-- COPYING. the baseline to beat
     focal        focal loss, gamma = 2
     synthetic    real RP plus synthetic RP at a given dose and truncation
-    colour_lr    logistic regression on global colour moments, a control
 
 Why "oversample" is the baseline and not "imbalanced"
 -----------------------------------------------------
@@ -19,14 +18,6 @@ Oversampling duplicates existing minority images and adds zero new information.
 It is the exact operationalisation of "copying the existing RP images". A
 generator that only reproduces its training distribution can at best match it.
 Beating it is the whole claim, so beating "imbalanced" proves nothing.
-
-Why colour_lr is included
--------------------------
-A source-shortcut audit found that global colour moments alone separate these
-classes at AUC 0.947, and that a logistic regression matched the CNN. If every
-deep arm lands near the colour baseline, the benchmark is saturated and no
-augmentation difference is interpretable. This arm is a validity check on the
-whole comparison, not a competitor.
 
 Augmentation bugs inherited from corrected_cv_v2.py, fixed here
 ---------------------------------------------------------------
@@ -125,26 +116,15 @@ class FocalLoss(nn.Module):
         return ((1 - torch.exp(-ce)) ** self.gamma * ce).mean()
 
 
-def colour_moments(paths):
-    """Per-channel mean and std at low resolution: the documented shortcut."""
-    X = np.empty((len(paths), 6), dtype=np.float64)
-    for i, p in enumerate(paths):
-        with Image.open(p) as im:
-            a = np.asarray(im.convert("RGB").resize((64, 64)), dtype=np.float64) / 255
-        X[i] = np.concatenate([a.mean((0, 1)), a.std((0, 1))])
-    return X
-
-
 # Arms that add generated images from a pool at a dose. The three differ only
 # in WHICH pool, never in how it is drawn from, so they share one branch.
 #   synthetic     legacy v3 pool -- contaminated, saw every holdout eye
 #   synth_clean   this study's generator, trained on the 111 dev eyes only
-#   pca_sampler   linear-manifold samples, ~1e4 params, no GPU
 #   synth_leak    the size-matched CONTAMINATED generator (trained on the 111
 #                 dev eyes with 28 of them swapped for holdout eyes). Routed
 #                 here so the arm is available, but it is NOT in config.ARMS:
 #                 enable it per run with --arms ... synth_leak --synth-leak-dir.
-POOL_ARMS = ("synthetic", "synth_clean", "synth_leak", "pca_sampler")
+POOL_ARMS = ("synthetic", "synth_clean", "synth_leak")
 
 # Arms that add nothing and differ only in loss / sampling of the reals.
 PLAIN_ARMS = ("real_only", "imbalanced", "oversample", "weighted", "focal")
@@ -167,7 +147,7 @@ def build_train_items(dev, arm, dose, pool, rng):
 
     `pool` is the arm's generated-image pool and is required for POOL_ARMS,
     ignored otherwise. An unrecognised arm RAISES: the previous version fell
-    through to the plain-CE branch, so `synth_clean` and `pca_sampler` trained
+    through to the plain-CE branch, so `synth_clean` trained
     as `real_only` and reported a null difference that was an artifact of
     routing, not a result.
     """
@@ -347,8 +327,6 @@ def main():
                     help="pool for 'synth_clean' (generate.py output)")
     ap.add_argument("--synth-leak-dir", default=None,
                     help="pool for 'synth_leak' (the contaminated generator)")
-    ap.add_argument("--pca-dir", default=None,
-                    help="pool for 'pca_sampler' (s04b output)")
     ap.add_argument("--tag", default="legacy_v3")
     ap.add_argument("--backbone", default="resnet18", choices=["resnet18", "toycnn"])
     ap.add_argument("--seeds", type=int, default=5)
@@ -377,15 +355,14 @@ def main():
     # rather than silently degrading to real_only.
     pools = {"synthetic": load_pool(a.synth_dir),
              "synth_clean": load_pool(a.synth_clean_dir),
-             "synth_leak": load_pool(a.synth_leak_dir),
-             "pca_sampler": load_pool(a.pca_dir)}
+             "synth_leak": load_pool(a.synth_leak_dir)}
     doses = a.doses if a.doses is not None else C.DOSE_LEVELS
     arms = a.arms if a.arms is not None else C.ARMS
     missing = [x for x in arms if x in POOL_ARMS and not pools[x]]
     if missing:
         raise SystemExit(f"arms {missing} requested but their image pools are "
-                         f"empty. Pass --synth-clean-dir / --pca-dir, or drop "
-                         f"them from --arms.")
+                         f"empty. Pass --synth-clean-dir / --synth-leak-dir, or "
+                         f"drop them from --arms.")
 
     print(f"device={device} backbone={a.backbone} tag={a.tag}")
     print(f"train on DEV: {len(dev['RP'])} RP + {len(dev['Healthy'])} healthy")
@@ -399,32 +376,10 @@ def main():
     print()
 
     res = {"tag": a.tag, "backbone": a.backbone, "synth_dir": a.synth_dir,
-           "synth_clean_dir": a.synth_clean_dir, "pca_dir": a.pca_dir,
+           "synth_clean_dir": a.synth_clean_dir,
            "n_seeds": a.seeds, "device": device,
            "eval_unit": C.EVAL_UNIT, "n_holdout_eyes": len(set(hold_keys)),
            "runs": []}
-
-    # Control arm: colour moments only. If the deep arms cannot beat this, the
-    # benchmark is saturated and no augmentation comparison means anything.
-    from sklearn.linear_model import LogisticRegression
-    from sklearn.preprocessing import StandardScaler
-    from sklearn.pipeline import make_pipeline
-    tr = ([(os.path.join(C.HEALTHY_DIR, f), 0) for f in sorted(dev["Healthy"])]
-          + [(os.path.join(C.REAL_RP_DIR, f), 1) for f in sorted(dev["RP"])])
-    Xtr = colour_moments([p for p, _ in tr]); ytr = np.array([y for _, y in tr])
-    Xte = colour_moments([p for p, _ in holdout_items])
-    yte = np.array([y for _, y in holdout_items])
-    lr = make_pipeline(StandardScaler(),
-                       LogisticRegression(max_iter=2000, class_weight="balanced"))
-    lr.fit(Xtr, ytr)
-    pc = lr.predict_proba(Xte)[:, 1]
-    m = score(pc, yte)
-    pe, ye = by_eye(pc, yte, hold_keys)
-    me = score(pe, ye)
-    res["runs"].append({"arm": "colour_lr", "dose": None, "seed": 0, **m,
-                        "eye": me, "probs": pc.tolist()})
-    print(f"colour_lr        AUC {m['auc']:.4f} image / {me['auc']:.4f} eye  "
-          f"<- shortcut control")
 
     for arm in arms:
         arm_doses = doses if arm in POOL_ARMS else [None]

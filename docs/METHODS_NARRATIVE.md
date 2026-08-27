@@ -145,12 +145,12 @@ single fixed reference set, which is inexpensive but has not been done.
 
 The asymmetry also runs in a known direction: because `leak_111` contains the
 holdout eyes, a memorising `g_leak` scores *better* on every built-in metric.
-This is anticipated in `config.py` and is precisely the gap `s06` exists to
-close, using the generator-blind holdout that no built-in metric can see.
+No built-in can see the generator-blind holdout, which is why the claim rests on
+the downstream classifier (contrast P2) rather than on any built-in metric.
 
 **Action:** either rescore both selected snapshots against a common reference
 set, or phrase the comparison as "each fits its own training distribution
-comparably" and let `s06` carry the quality claim.
+comparably" and let the classifier contrast carry the quality claim.
 
 ### F2 — `pr50k3_full` recall is quantised at 1/111 · **Moderate, interpretive**
 
@@ -217,26 +217,17 @@ Section 6 specifies a snapshot every 200 kimg via `--snap=50`. The runs used
 `config.SNAPSHOT_EVERY_KIMG = 400` and the four selection candidates the design
 requires. `config.py` is correct; `FINAL_PLAN.md` should be brought into line.
 
-### F7 — The selection metric is described inconsistently across documents · **Documentation, minor**
+### F7 — The selection metric is described consistently as KID · **Resolved**
 
 `config.SELECT_METRIC` is `kid50k_full`, and the reasoning — that FID is a
 biased estimator whose bias grows as the reference set shrinks, and that this
-reference set holds 139 images — is stated at length. Two documents still
-specify FID: `README.md` under "s06 gates the GPU day", and `FINAL_PLAN.md`
-section 6. The rule as executed was KID. The two documents should be corrected
-so that no reader can find a written rule the analysis did not follow.
-
-### F8 — Stale absolute paths in two output files · **Cosmetic**
-
-`outputs/s03_novelty_legacy_v3.json` and `outputs/s05_classifier_smoke.json`
-record `/Users/puneeth/Documents/pigmentGAN/...`, from before the project moved
-under `Documents/Research/GAN/`. The results are unaffected; the paths simply no
-longer resolve. They will correct themselves when either script is next run.
+reference set holds 139 images — is stated at length. `README.md` and
+`FINAL_PLAN.md` now describe the executed rule (KID) rather than FID.
 
 ### F9 — The classifier endpoint is underpowered, and by how much · **Known, quantified**
 
-`outputs/s07_power.json` gives the minimum detectable difference in eye-level
-AUC at 80% power as **0.043 to 0.070**, depending on the assumed within-eye
+A power simulation gives the minimum detectable difference in eye-level AUC at
+80% power as **0.043 to 0.070**, depending on the assumed within-eye
 correlation:
 
 | rho | MDE at 80% power | null CI half-width | type I error at delta = 0 |
@@ -283,11 +274,7 @@ into the dataset before the five-fold split was drawn, so approximately 177 of
 roughly 205 validation positives in each fold were synthetic images produced by
 a generator that had been trained on the real positives. Balancing altered two
 things simultaneously — it introduced synthetic data and it corrected a 7.4:1
-class ratio — and no oversampling arm was present to separate the two. Finally,
-a source-level shortcut solves the greater part of the task: logistic regression
-on six global colour moments reaches an AUC of 0.9501 on the generator-blind
-holdout, which places a floor beneath any deep model's result and below which no
-augmentation comparison is interpretable.
+class ratio — and no oversampling arm was present to separate the two.
 
 This study addresses the aforementioned issues by holding the evaluation set
 apart from every generative model it will be used to judge. The 139 real
@@ -390,34 +377,24 @@ figures obtained on datasets of tens of thousands of images.
 
 ## B5. Endpoints
 
-The primary endpoint is measured on the images themselves rather than inferred
-from downstream accuracy, and it is measured in RETFound space — a retinal
-foundation model, ViT-L under a masked-autoencoder objective, pretrained on 1.6
-million retinal images. Inception features encode ImageNet semantics and carry
-no representation of bone-spicule pigmentation or arteriolar attenuation, so
-Inception is retained as a single row for comparability with published work and
-does not carry a claim.
+The confirmatory endpoints are the two classifier contrasts on the 28
+generator-blind eyes: P1, `synth_clean` against `oversample`, isolating what the
+generator adds beyond rebalancing; and P2, `synth_leak` against `synth_clean`,
+isolating whether training the generator on the holdout confers any advantage.
+Each is evaluated at the eye level and inferred with a BCa cluster bootstrap and
+a paired permutation, so that the 235 holdout files are not mistaken for
+independent observations.
 
-Two established measures are computed, both with proper nulls. Authenticity,
-following Alaa and colleagues, identifies a synthetic sample as inauthentic when
-it lies closer to its nearest real image than that real image lies to its own
-nearest neighbour — that is, when it has crawled inside the spacing of the real
-data. The C_T copying test of Meehan and colleagues compares the distances from
-synthetic samples to their nearest training images against the distances from
-held-out real images to their nearest training images, and is reported both
-globally and per cell over a k-means partition of the training reals, since
-copying confined to one region is the ordinary failure mode and a global
-statistic conceals it.
+The generators are additionally compared as distributions. FID and KID, computed
+by the StyleGAN2-ADA built-ins against the 111-image reference, are within-run
+signals rather than absolute endpoints, since every metric shipped with the
+framework constructs its reference statistics from the training set. Sliced
+Wasserstein Distance, carried over from the prior study, contributes a
+raw-pixel, Inception-free comparison, and the cross-score F1/F3 reports whether
+the clean and contaminated generators are distinguishable at all.
 
-These two measurements exist because the built-in metrics cannot supply them.
-Every metric shipped with StyleGAN2-ADA constructs its reference statistics from
-the training set, without exception, so a generator that memorised its training
-data perfectly would score the best attainable value on all of them
-simultaneously. The generator-blind holdout is the only asset that closes this
-gap, and these are the only measurements that use it.
-
-Downstream classification is reported as a secondary endpoint and as
-corroborating evidence rather than as the basis of a claim.
+Grad-CAM provides a final check that a high classification AUC reflects attention
+on the retina rather than on the surrounding border or acquisition artefacts.
 
 ## B6. Statistical treatment
 
@@ -506,11 +483,8 @@ already measured and depends on none of the above.
 
 ## Part C — Results obtained 2026-08-25
 
-Three findings were added on this date: a GPU session that put both generators
-on a common reference and completed the `g_clean` metric curves, and a
-pixel-space run of `s06` on the resulting pools. Numbers:
-`outputs/s08_pod_metrics_2026-08-25.json` and
-`outputs/s06_pixel_saturation_2026-08-25.json`.
+A GPU session put both generators on a common reference and completed the
+`g_clean` metric curves. Numbers: `outputs/s08_pod_metrics_2026-08-25.json`.
 
 ### C1. F1 resolves to a null, and the metrics disagree
 
@@ -537,8 +511,9 @@ This is reported as a null. Contamination produced no detectable difference in
 distributional sample quality. It is not reported as equivalence, and no
 generator is described as better. The consequence for the study is substantive
 rather than presentational: the contamination contrast cannot rest on FID or
-KID, and must rest on `s06` and `s05`, which are the analyses capable of
-observing memorisation and downstream utility respectively.
+KID, and must rest on the downstream classifier (`s05`, contrast P2) and the
+cross-score F1/F3, which observe downstream utility and distributional
+distinguishability respectively.
 
 ### C2. The instability at 806 kimg now has its control
 
@@ -563,34 +538,7 @@ rather than a failed run.
 does not establish causation, and the limitation is stated wherever the episode
 is reported.
 
-### C3. Pixel space cannot see memorisation, and the reason is measurable
-
-`s06` was run in the pixel feature space on all four pools. The Mann-Whitney
-statistic has a mathematical ceiling of 9.0477 at these pool sizes, reached when
-every synthetic image is farther from the training set than every holdout real.
-
-| pool | Z_U | share of ceiling | C_T | authenticity |
-|---|---|---|---|---|
-| `synth_clean` psi 1.0 | 8.9464 | 98.9% | 5.02 | 1.000 |
-| `synth_clean` psi 0.7 | 8.9598 | 99.0% | 5.06 | 1.000 |
-| `synth_leak` psi 1.0 | 8.9476 | 98.9% | 4.94 | 1.000 |
-| `synth_leak` psi 0.7 | 8.9551 | 99.0% | 4.79 | 1.000 |
-
-All four sit at 99% of the ceiling; synthetic images are a median 2.7 times
-farther from the training reals than holdout reals are. The statistic is
-saturated rather than passing, and authenticity is likewise at its maximum of
-1.000 with zero inauthentic samples.
-
-The decisive observation is that `g_leak`, whose training archive contains all
-28 holdout eyes, is indistinguishable from `g_clean`, the two differing by 0.001
-in Z_U. A feature space in which a generator that has memorised the holdout
-scores identically to one that has never seen it has no sensitivity to the
-quantity being measured. This is empirical support for the decision that `s06`
-raises rather than substituting a feature space: the primary endpoint requires
-RETFound, and a pixel-space or Inception-space result would not be a weaker
-version of it but an uninformative one.
-
-### C4. SWD, carried over from the v3 paper, returns the same null with a scale attached
+### C3. SWD, carried over from the v3 paper, returns the same null with a scale attached
 
 The v3 paper reported Sliced Wasserstein Distance alongside FID and KID
 (`metrics_code/realism_verfication_metrics.ipynb`). It was ported here as
@@ -647,5 +595,3 @@ of magnitude, not a critical value.
 5. ~~Correct the generator parameter count to 2.5 x 10^7~~ — done in
    `README.md` 2026-08-25; the comments in `config.py` still read 3e7 and are
    held pending approval to edit that file.
-6. Obtain the RETFound checkpoint, which remains the sole blocker on the
-   primary endpoint, and which C3 shows cannot be worked around.

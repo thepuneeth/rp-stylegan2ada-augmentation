@@ -13,8 +13,7 @@ This study decomposes it into two sources it can actually afford to measure:
 v3 merged its synthetic images into the dataset BEFORE the 5-fold split, so
 roughly 177 of ~205 validation positives per fold were synthetic images from a
 generator trained on the real positives. It also had no oversampling arm, so
-"add synthetic" and "fix a 7.4:1 class ratio" were never separated. And six
-global colour moments already reach AUC 0.9501 on this cohort.
+"add synthetic" and "fix a 7.4:1 class ratio" were never separated.
 
 Here every arm trains on the same 111 real RP images and is scored on 28 eyes
 NO generator ever saw, so no result can be explained by the generator having
@@ -75,8 +74,8 @@ for _d in (OUT, SPLITS, GAN_DATA, DOCS):
 # histogram has no duplicate mode to threshold. (b) Single linkage chains a~b,
 # b~c into one cluster even when a and c are unrelated.
 #
-# s01a calibrated four candidate features against five independently confirmed
-# duplicate pairs. FOV-cropped grayscale correlation recovered all five with
+# A calibration compared four candidate features against five independently
+# confirmed duplicate pairs. FOV-cropped grayscale correlation recovered all five with
 # ZERO false positives above the weakest of them; high-pass admitted 1225 and
 # gradient magnitude 391. The weakest confirmed pair sits at 0.9905 and the
 # largest gap in the similarity ranking falls at 0.9986 -> 0.9905.
@@ -122,7 +121,6 @@ PSI_LEVELS = [0.7, 1.0]
 #   ------------  -------------------------------------  --------------------
 #   real_only     --                                     floor
 #   oversample    minority duplicated to balance         balance, no new pixels
-#   pca_sampler   linear manifold samples (k=22, 4.5e6 floats)  cheap comparator
 #   synth_clean   StyleGAN2-ADA (~2.5e7 params), the ONE   the generator as
 #                 new run, ffhq256 -> 111 dev eyes       normally used
 #
@@ -131,9 +129,7 @@ PSI_LEVELS = [0.7, 1.0]
 #                                     rebalancing.  THE PRIMARY CONTRAST,
 #                                     and the only confirmatory test.
 #   S1  oversample vs real_only    -- class balance alone.        descriptive
-#   S2  pca_sampler vs synth_clean -- does a 22-direction linear
-#       subspace match 2.5e7 weights?                            descriptive
-ARMS = ["real_only", "oversample", "pca_sampler", "synth_clean"]
+ARMS = ["real_only", "oversample", "synth_clean"]
 
 # Historical row, not an arm. The v3 generator saw all 139 real RP including
 # every evaluation eye. Labelled contaminated wherever it appears; supports no
@@ -189,10 +185,9 @@ SNAPSHOT_EVERY_KIMG = 400
 #
 #   --metrics=fid50k_full,kid50k_full,pr50k3_full
 #
-# pr50k3_full (Kynkaanniemi precision/recall) covers fidelity and diversity,
-# so s06 does not recompute them. What no built-in can cover: every metric in
-# NVIDIA's metrics/ module references the TRAINING set, so a memorising
-# generator scores best-possible on all of them. That is s06's only job.
+# pr50k3_full (Kynkaanniemi precision/recall) covers fidelity and diversity.
+# Every metric in NVIDIA's metrics/ module references the TRAINING set, so it is
+# a within-run signal only and cannot detect memorisation of the holdout.
 SELECT_METRIC = "kid50k_full"
 TRAIN_METRICS = "fid50k_full,kid50k_full,pr50k3_full"
 SELECT_MIN_KIMG = 2000
@@ -210,32 +205,9 @@ TRAIN_KIMG_CAP = TRAIN_KIMG  # no surplus extension
 # reals: valid as a within-run trend, meaningless as an absolute number. Never
 # compare it to published FIDs on 70k-image datasets.
 
-# ------------------------------------------------------------ feature space
-# Feature space for the primary image-level metrics (Alaa alpha-precision /
-# beta-recall / authenticity, Meehan C_T). RETFound is a retinal foundation
-# model (ViT-L MAE, 1.6M retinal images, Nature 2023). Inception encodes
-# ImageNet semantics and says nothing about bone-spicule pigmentation or
-# arteriolar attenuation, so it is retained only for comparability with
-# published work.
-#
-# Preprocessing and layer selection are FROZEN before any generator is scored,
-# and the embedding must pass two sanity checks first: the five confirmed
-# duplicate pairs are mutual nearest neighbours, and real RP separates from
-# real non-RP pathology.
-FEATURE_SPACES = ["retfound", "inception", "pixel"]
-PRIMARY_FEATURE_SPACE = "retfound"
-
 DEVICE = "mps"
 
 # DataLoader worker processes. 0 means decode in the main process, which on the
 # local box measured 18.1 ms per image with the GPU idle behind it. Set from the
 # environment so one pod recipe fits any core count: S05_WORKERS=8 etc.
 NUM_WORKERS = int(os.environ.get("S05_WORKERS", "0"))
-
-# ------------------------------------------------------------- novelty metric
-# Appendix only. The interval resamples size-matched synthetic subsets from one
-# fixed pool, so it captures subset-selection variability only -- not variation
-# across holdout eyes, training eyes, or generator runs. Supports no main-text
-# claim. The headline 0.714 / p=0.0078 is a set-size artifact; the size-matched
-# value is 0.426 / p=0.71.
-NCG_BOOTSTRAP = 500

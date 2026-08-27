@@ -240,22 +240,14 @@ the unbiased small-sample estimator of the same discrepancy and is the correct
 headline at this n. Both ship with the repo for the cost of one flag; the
 previous project logged only FID, which was an oversight rather than a choice.
 
-`pr50k3_full` (Kynkaanniemi precision/recall) covers fidelity and diversity, so
-`s06_metrics.py` does not recompute them.
+`pr50k3_full` (Kynkaanniemi precision/recall) covers fidelity and diversity.
 
 **FID here is a monitoring signal, not an endpoint.** It is computed against 139
 reals, so it is valid as a within-run trend and meaningless as an absolute
-number. Do not compare it to published FIDs on 70k-image datasets. The paper's memorisation
-endpoints are authenticity and Meehan C_T, computed locally by
-`scripts/s06_metrics.py` against the generator-blind holdout.
-
-Why that module exists at all: EVERY metric in NVIDIA's `metrics/` module builds
-its reference statistics from the TRAINING set -- there is no held-out data
-anywhere in it. So a generator that perfectly memorises scores FID ~ 0,
-precision 1.0 and recall 1.0, the best possible value on all of them at once.
-`s06_metrics.py --selftest` demonstrates this numerically on toy data: a pure
-copier scores precision 1.000 / recall 0.973 against an honest generator's
-0.835 / 0.811. Closing that blind spot is s06's only job.
+number. Do not compare it to published FIDs on 70k-image datasets. Every metric
+in NVIDIA's `metrics/` module builds its reference statistics from the TRAINING
+set, so none of them can detect memorisation of the holdout; that question is
+answered downstream by `s05` (contrast P2) and the cross-score F1/F3 (`s08`).
 
 **Selection rule, prespecified:** lowest `kid50k_full` among snapshots
 ≥ 2,000 kimg; ties break to the earlier snapshot. The prior project's best snapshot was 41.69 at
@@ -323,25 +315,9 @@ Sync both directories off, verify locally, **then terminate the pod.**
 ## 5. Back on the local machine — no GPU from here
 
 ```bash
-python variability_study/scripts/s03_novelty_metrics.py \
-  --synth-dir gen/clean_psi1.0 --tag clean_psi1.0
-
 python variability_study/scripts/s05_classifier.py \
+  --synth-clean-dir gen/clean_psi1.0 --tag clean_psi1.0
+
+python variability_study/scripts/s09_swd.py \
   --synth-dir gen/clean_psi1.0 --tag clean_psi1.0
 ```
-
-### Reference numbers — legacy v3, contaminated
-
-Size-matched, Inception space. That generator trained on all 139 real RP
-including every evaluation eye. **Upper bounds only.**
-
-| metric | v3 (leaky) |
-|---|---|
-| Inception precision | 0.938 |
-| Inception recall | **0.297** |
-| coverage vs holdout | 1.000 |
-| novel coverage gain, size-matched | 0.426 [0.286, 0.536] |
-| memorisation flagged | 0 / 885 |
-
-**Precision gates recall.** A recall gain accompanied by a precision or
-authenticity drop is not novelty. Never report the two as co-equal numbers.

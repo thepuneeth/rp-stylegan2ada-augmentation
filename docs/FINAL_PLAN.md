@@ -73,32 +73,33 @@ Everything else in the study runs on the local machine at zero GPU cost.
 
 ## 3. Design
 
-One new generator. Five classifier arms. Every arm trains on the same 111 real
-RP images and is scored on the same 28 **generator-blind** eyes. Eye-disjoint,
-built and verified (`s00_verify.py`, 20/20 invariants).
+Two matched generators. Four classifier arms. Every arm trains on the same 111
+real RP images and is scored on the same 28 **generator-blind** eyes.
+Eye-disjoint, built and verified (`s00_verify.py`).
 
 | arm | training set addition | GPU |
 |---|---|---|
 | **A** `real_only` | — | 0 |
 | **B** `oversample` | minority duplicated to balance | 0 |
-| **D** `pca_sampler` | linear-manifold samples | 0 |
 | **C** `synth_clean` | **the one new generator**, 111 dev eyes only | 18.8 h |
-| — `legacy_v3` | the existing v3 pool, generator saw all 139 | 0 (already on disk) |
+| — `synth_leak` | the size-matched CONTAMINATED generator, opt-in | 0 (already on disk) |
 
-`legacy_v3` is a historical row, not an arm. It is labelled contaminated
-everywhere it appears and supports no clean claim.
+`synth_leak` is the second matched generator (trained on 28 holdout + 83 dev
+eyes). It is wired but not in `config.ARMS`, added on the command line for
+contrast P2.
 
 ### Prespecified contrasts
 
 | # | contrast | isolates | prior expectation |
 |---|---|---|---|
 | **P1** | **C vs B** | what the generator adds *beyond rebalancing* | small or null |
+| **P2** | **`synth_leak` vs C** | generator-mediated leakage: did training on the holdout help | small or null |
 | S1 | B vs A | class balance alone | most of the prior gain |
-| S2 | D vs C | does a ~10⁴-parameter sampler match a ~3×10⁷-parameter one | D close to C |
 
-**P1 is the only confirmatory test.** It is the direct version of "does the GAN
-beat oversampling" — the question the prior work never asked and the reviewer
-asks first. S1 and S2 are descriptive, unadjusted intervals, labelled as such.
+**P1 and P2 are confirmatory.** P1 is the direct version of "does the GAN beat
+oversampling" — the question the prior work never asked and the reviewer asks
+first. P2 tests whether a deliberately contaminated generator gains anything.
+S1 is a descriptive, unadjusted interval, labelled as such.
 
 ### The leakage result
 
@@ -149,21 +150,21 @@ precisely the inference the prior work got wrong. A reviewer who accepts the
 distribution result will ask the classifier question next, and the answer costs
 one flag decided now versus a full re-run decided later.
 
-The arm is **secondary and descriptive**, reported with unadjusted intervals and
-labelled as such. It does not enter the primary S1 contrast and does not change
-the multiplicity accounting, because the primary endpoint was prespecified as
-`synth_clean` versus `oversample` on the blind eyes and stays that way.
+The arm carries contrast **P2**, prespecified alongside P1. The primary P1
+endpoint remains `synth_clean` versus `oversample` on the blind eyes and stays
+that way.
 
 Launch is therefore:
 
 ```
 python3 scripts/s05_classifier.py \
-  --arms real_only oversample pca_sampler synth_clean synth_leak \
+  --arms real_only oversample synth_clean synth_leak \
+  --synth-clean-dir <psi1.0 clean sample dir> \
   --synth-leak-dir <psi1.0 leak sample dir>
 ```
 
-`config.ARMS` stays at four, so the default sweep remains the prespecified one
-and the fifth arm is visible in the command that produced it.
+`config.ARMS` stays at three, so the default sweep remains the prespecified one
+and `synth_leak` is visible in the command that produced it.
 
 ### Dropped from the previous plan
 
@@ -174,7 +175,6 @@ and the fifth arm is visible in the command that produced it.
 | the `train.py:313-315` patch | only mattered because E did not resume while F did. Both remaining generators resume, so the `ada_kimg`/`ema_rampup` shift hits identically and cancels |
 | generator seeds ×3 | n=1. See §6 |
 | scarcity sweep | 28 blind eyes cannot resolve a curve |
-| NCG | appendix at most |
 | the DPI argument | one motivating sentence, scoped to the generator stage, phrased as a hypothesis |
 
 Dropping arm E deletes the ugliest implementation item in the project for free.
@@ -183,29 +183,29 @@ Dropping arm E deletes the ugliest implementation item in the project for free.
 
 ## 4. Endpoints
 
-### Primary — image-level, on the 28 blind eyes
+### Primary — downstream classification, on the 28 blind eyes
 
-Feature space: **RETFound** (retinal foundation model, ViT-L MAE, 1.6M retinal
-images, Nature 2023). Inception retained as one row for comparability only;
-Inception features encode ImageNet semantics, not bone-spicule pigmentation or
-arteriolar attenuation.
+The confirmatory endpoints are the classifier contrasts P1 (`synth_clean` vs
+`oversample`) and P2 (`synth_leak` vs `synth_clean`), evaluated at eye level and
+inferred by `s12_contrasts.py` with BCa cluster bootstrap and permutation. See
+§5 for what this endpoint can and cannot resolve.
 
-| metric | source | asks |
-|---|---|---|
-| α-precision, β-recall, **authenticity** | Alaa, ICML 2022 | fidelity / diversity / is each sample a copy |
-| **C_T** three-sample test | Meehan, AISTATS 2020 | are samples too close to *training*, with a proper null |
+### Distributional realism — supporting
 
-Preprocessing and layer selection are frozen and documented before any generator
-is scored. Embedding sanity checks: the five confirmed duplicate pairs must be
-mutual nearest neighbours, and real RP must separate from real non-RP pathology.
+The two generators are compared as distributions with FID and KID
+(StyleGAN2-ADA built-ins, within-run signals) and **SWD** (`s09`, raw-pixel,
+Inception-free). None of these is an endpoint on its own; together with the
+cross-score F1/F3 (`s08`) they say whether the clean and contaminated
+generators are distinguishable at all.
 
 **FID is a monitoring signal, not an endpoint.** It is computed against only 139
 reals, so it is valid as a within-run trend and meaningless as an absolute
 number. Never compare it to published FIDs on 70k-image datasets.
 
-### Secondary — downstream classification
+### Attention — supporting
 
-Reported, and reported as underpowered. See §5.
+Grad-CAM (`s11`) checks that a high AUC reflects attention on the retina rather
+than the black border or acquisition artefacts, against the disc-area null.
 
 ---
 
@@ -218,21 +218,18 @@ Holdout: 28 RP eyes and 207 Healthy **files** representing **197 Healthy eyes**.
   control reads AUC 0.9561, stratified eye-cluster bootstrap 95% CI
   **[0.9204, 0.9850]** — the width of that interval on a *saturated* control is
   the honest picture of available precision.
-- **A source shortcut solves most of the task.** Logistic regression on six
-  global colour moments reaches AUC 0.9501 image-level / 0.9561 eye-level. Every
-  image shares a JPEG quantization signature and a single resolution. Reported
-  first, as a control.
+- **The benchmark is near-saturated.** Even a simple colour baseline reaches AUC
+  ~0.95 on this cohort, which shares a JPEG quantization signature and a single
+  resolution. An arm that does not clear that has not demonstrated anything
+  retinal — which is why Grad-CAM (`s11`) checks where attention actually lands.
 - **Patient identity is unavailable** in the source dataset. Contralateral eyes
   may cross partitions. Eye is the finest reliable unit.
-- **Power by simulation, not by formula.** The earlier analytic MDE of 0.046
-  assumed ρ=0.8 with no justification. Replace with a paired cluster bootstrap
-  over the observed score distributions.
-- **The holdout is generator-blind but reused.** It quantified the colour
-  shortcut and motivated this design. Describe it as a *generator-blind reused
-  holdout*; downstream inference is exploratory.
+- **The holdout is generator-blind but reused.** It motivated this design.
+  Describe it as a *generator-blind reused holdout*; downstream inference is
+  interpreted against the width of the cluster-bootstrap interval.
 
-Consequence: the image-level metrics carry P1. The classifier is corroborating
-evidence, not the basis of a claim.
+Consequence: the classifier contrasts P1 and P2 carry the claim, scoped to what
+28 blind eyes can resolve.
 
 ---
 
@@ -240,8 +237,8 @@ evidence, not the basis of a claim.
 
 Fixed before results are seen.
 
-- **Primary contrast:** P1 (C vs B). Primary endpoint β-recall in RETFound
-  space. Secondary endpoint eye-level holdout AUC.
+- **Primary contrasts:** P1 (C vs B) and P2 (`synth_leak` vs C). Endpoint:
+  eye-level holdout AUC difference, BCa cluster bootstrap + permutation.
 - **Equivalence margin:** claiming "C ≈ B" requires the 95% CI of the difference
   to lie entirely within ±δ. δ is set from the B-vs-B resampling spread measured
   before any C result is read.
@@ -289,7 +286,7 @@ At 14 sec/kimg the 20-hour budget reaches ~5,000 kimg and the cap binds first.
 | **C ≈ B** | the reported benefit of synthetic RP augmentation is rebalancing plus evaluation contamination — a ~3×10⁷-parameter generator matched by duplication |
 | **C > B** | the generator adds real information beyond rebalancing, measured against the control that would have explained it away |
 | **C < B** | synthetic augmentation is actively worse than duplication in this regime |
-| **inconclusive** | reported as such, with the power simulation showing what cohort size would be needed |
+| **inconclusive** | reported as such, scoped to what 28 blind eyes can resolve |
 
 The evaluation-leakage decomposition (§3) is reported in every branch, because
 it is already measured.
@@ -298,17 +295,16 @@ it is already measured.
 
 ## 8. Six pages
 
-**In:** the decomposition, four arms + one historical row, RETFound Alaa +
-Meehan on the blind holdout, eye-level analysis with cluster bootstrap, the
-colour-shortcut control, the prespecified decision rules, the leakage
+**In:** the decomposition, four arms (A, B, C + `synth_leak`), classifier
+contrasts P1 and P2 with eye-level cluster bootstrap, FID/KID/SWD distributional
+realism, Grad-CAM attention, the prespecified decision rules, the leakage
 decomposition.
 
-**Out:** Grad-CAM, external validation, focal loss, the full v3 comparator
-table (cite it), scratch/corpus/leak generators, the scarcity sweep, NCG
-(appendix).
+**Out:** external validation, focal loss, the full v3 comparator table (cite
+it), the scratch/corpus generators, the scarcity sweep.
 
-**If it still does not fit, cut in this order:** arm D → the ψ sweep (keep 1.0)
-→ the Inception comparability row. Never cut A, B or C — they are the spine.
+**If it still does not fit, cut in this order:** the ψ sweep (keep 1.0) → SWD →
+Grad-CAM. Never cut A, B or C — they are the spine.
 
 ---
 
@@ -323,8 +319,7 @@ person in Dallas** for inclusion in the proceedings. Confirm both.
 ## 10. External data — out of scope for this submission
 
 Six pages cannot hold it, and every route below needs human correspondence
-on someone else's timetable. Stated as a limitation alongside the power
-simulation. Longest lead time first:
+on someone else's timetable. Stated as a limitation. Longest lead time first:
 
 1. **Iowa StoneRounds** — ~490 images / ~178 patients, CC BY-NC-ND 3.0; site
    states "Do NOT scrape". Email for nonprofit research access.
@@ -337,8 +332,5 @@ simulation. Longest lead time first:
 
 - [IEEE BIBM 2026 UGHS Symposium](https://bibm2026-hs.github.io/)
 - [Deep learning detection of RP inheritance forms through synthetic data expansion — Sci Rep 2026](https://pmc.ncbi.nlm.nih.gov/articles/PMC12687845/)
-- [How Faithful is your Synthetic Data? — Alaa et al., ICML 2022](https://proceedings.mlr.press/v162/alaa22a.html)
-- [A Non-Parametric Test to Detect Data-Copying in Generative Models — Meehan et al., AISTATS 2020](https://proceedings.mlr.press/v108/meehan20a.html)
 - [Do Synthetic Brain MRIs Reliably Improve Tumour Classification? — arXiv 2605.23094](https://arxiv.org/pdf/2605.23094)
-- [RETFound — Nature 2023](https://www.nature.com/articles/s41586-023-06555-x)
 - [Eye Disease Image Dataset — Mendeley, CC BY 4.0](https://data.mendeley.com/datasets/s9bfhswzjb/1)
