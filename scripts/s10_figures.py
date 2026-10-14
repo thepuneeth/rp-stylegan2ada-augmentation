@@ -28,6 +28,11 @@ FIGDIR = os.path.join(C.ROOT, "figures")
 os.makedirs(FIGDIR, exist_ok=True)
 ARMC = {"g_clean": "#1f77b4", "g_leak": "#d62728"}
 
+# Names used in the paper. The runs are still called g_clean / g_leak on disk,
+# but every label a reader sees says "contaminated", never "leak".
+PAPER_NAME = {"g_clean": "Clean-GAN", "g_leak": "Contaminated-GAN"}
+REF_NAME = {"clean_111": "clean reference", "leak_111": "contaminated reference"}
+
 
 def _save(fig, name):
     for ext in ("png", "svg"):
@@ -139,17 +144,27 @@ def fig_crossscore():
         for gen, key in (("clean-002822", "g_clean"), ("leak-003000", "g_leak")):
             for ref in ("clean_111", "leak_111"):
                 k = [kk for kk in cs[gen] if kk.startswith(f"vs_{ref}")][0]
-                vals.append(cs[gen][k][mk]); labels.append(f"{key}\nvs {ref}")
+                vals.append(cs[gen][k][mk])
+                labels.append(REF_NAME[ref].replace(" ", "\n"))
                 colors.append(ARMC[key])
         ax[i].bar(range(4), vals, color=colors, alpha=.85)
         ax[i].set_xticks(range(4)); ax[i].set_xticklabels(labels, fontsize=7)
         ax[i].set_title(lab, fontsize=10); ax[i].grid(alpha=.3, axis="y")
         lo, hi = min(vals), max(vals); pad = (hi - lo) * .6 + 1e-9
         ax[i].set_ylim(lo - pad, hi + pad)          # margins are tiny: show that
-    fig.suptitle("F1: each generator against BOTH reference sets. "
-                 "Note the axis ranges -- all separations are small.",
-                 fontsize=9)
+    # the generator is carried by colour, the x axis by the reference set
+    handles = [plt.Rectangle((0, 0), 1, 1, color=ARMC[k], alpha=.85)
+               for k in ("g_clean", "g_leak")]
+    ax[0].legend(handles, [PAPER_NAME["g_clean"], PAPER_NAME["g_leak"]],
+                 fontsize=7, frameon=False, loc="upper left")
     _save(fig, "fig_crossscore_2x2")
+
+
+def _swd_label(name):
+    """synth_leak_psi1.0 -> 'Contaminated-GAN\\npsi=1.0'"""
+    gen = "Contaminated-GAN" if "leak" in name else "Clean-GAN"
+    psi = name.split("psi")[-1]
+    return f"{gen}\n$\\psi$={psi}"
 
 
 def fig_swd():
@@ -164,14 +179,12 @@ def fig_swd():
     fig, ax = plt.subplots(figsize=(7, 3.4))
     cols = [ARMC["g_leak"] if "leak" in n else ARMC["g_clean"] for n in names]
     ax.bar(range(len(names)), vals, color=cols, alpha=.85)
-    ax.axhline(floor, color="k", ls="--", lw=1.2, label=f"noise floor {floor:.4f}")
     ax.axhline(rr, color="grey", ls=":", lw=1.4, label=f"real vs real {rr:.4f}")
     ax.set_xticks(range(len(names)))
-    ax.set_xticklabels([n.replace("synth_", "") for n in names], fontsize=8)
-    ax.set_ylabel("SWD vs clean_111"); ax.set_ylim(floor * .97, max(vals) * 1.02)
+    ax.set_xticklabels([_swd_label(n) for n in names], fontsize=8)
+    ax.set_ylabel("SWD to real training set")
+    ax.set_ylim(0, max(vals) * 1.15)   # bars imply a zero baseline: show it
     ax.legend(frameon=False, fontsize=8); ax.grid(alpha=.3, axis="y")
-    ax.set_title("SWD separates synthetic from real, but not the two generators.",
-                 fontsize=9, loc="left")
     _save(fig, "fig_swd")
 
 

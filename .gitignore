@@ -29,3 +29,23 @@ __pycache__/
 *.pyc
 .DS_Store
 *.swp
+
+# ------------------------------------------------ exploratory / local-only
+# Grad-CAM variants explored before the paper figure was fixed; the paper uses
+# fig_gradcam_pigmented_eye27 only.
+figures/fig_gradcam_*
+!figures/fig_gradcam_pigmented_eye27.png
+outputs/s11_gradcam_*.json
+!outputs/s11_gradcam_pigmented_eye27.json
+outputs/foldgrid_weights/
+outputs/*.log
+figures/holdout_rp_contactsheet.png
+figures/_figure_manifest.md
+figures/*.critique.json
+*.bak
+*.bak_*
+# working notes, not study artifacts
+docs/copilot_panel.html
+docs/PAPER_SKELETON_REWRITE.md
+outputs/GRADCAM_HANDOFF.md
+outputs/gradcam_repro_prespec.md

@@ -38,6 +38,7 @@ Augmentation bugs inherited from corrected_cv_v2.py, fixed here
 Outputs outputs/s05_classifier_<tag>.json
 """
 import os, sys, json, argparse, time
+from concurrent.futures import ThreadPoolExecutor
 import numpy as np
 import torch, torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
@@ -64,6 +65,57 @@ EVAL_TF = transforms.Compose([
     transforms.Resize((C.IMG_SZ, C.IMG_SZ)), transforms.ToTensor(), NORM,
 ])
 
+# The original research's train transform, verbatim from
+# pigmentGAN/synthesized_dataset_CNN.ipynb. Retained unmodified -- including the
+# constant -15 degree rotation and the one-sided contrast, both of which the
+# current TRAIN_TF deliberately corrected -- because the question is whether the
+# published attention result depends on them. shear=40 with scale (0.75, 1.2)
+# distorts the frame every epoch, which is the candidate reason the border was
+# not usable as a shortcut there.
+ORIG_TRAIN_TF = transforms.Compose([
+    transforms.Resize((C.IMG_SZ, C.IMG_SZ)),
+    transforms.RandomAffine((-15, -15), translate=(0.05, 0.1),
+                            scale=(0.75, 1.2), shear=40),
+    transforms.ColorJitter(contrast=(0.2, 1.0)),
+    transforms.Resize((C.IMG_SZ, C.IMG_SZ)),
+    transforms.ToTensor(), NORM,
+])
+
+AUGS = {"current": None, "orig": ORIG_TRAIN_TF}   # None -> module TRAIN_TF
+
+
+# Decode-once cache, path -> 256x256x3 uint8.
+#
+# The real fundus sources are 2004x1690 JPEGs, so every access paid a 20 ms
+# decode to produce a 256x256 tensor -- 30 epochs x 70 fits of the same
+# handful of images. Resize is the first step of both transforms and Pillow
+# returns a plain copy when the requested size already matches, so caching the
+# resized array and letting the transform resize it a second time is
+# bit-identical (verified: max abs diff 0) and about 300x cheaper.
+#
+# Prefilled in the parent before any DataLoader is built, so forked workers
+# inherit it copy-on-write instead of each decoding its own copy.
+_CACHE = {}
+
+
+def prefill_cache(paths, workers=16):
+    todo = [p for p in dict.fromkeys(paths) if p not in _CACHE]
+    if not todo:
+        return
+    rs = transforms.Resize((C.IMG_SZ, C.IMG_SZ))
+
+    def load(p):
+        with Image.open(p) as im:
+            return p, np.asarray(rs(im.convert("RGB")))
+
+    t0 = time.time()
+    with ThreadPoolExecutor(workers) as ex:
+        for p, a in ex.map(load, todo):
+            _CACHE[p] = a
+    mb = sum(a.nbytes for a in _CACHE.values()) / 1e6
+    print(f"cached {len(todo)} images in {time.time() - t0:.0f}s "
+          f"({mb:.0f} MB resident)", flush=True)
+
 
 class ImgDS(Dataset):
     def __init__(self, items, tf):
@@ -74,6 +126,9 @@ class ImgDS(Dataset):
 
     def __getitem__(self, i):
         p, y = self.items[i]
+        a = _CACHE.get(p)
+        if a is not None:
+            return self.tf(Image.fromarray(a)), y
         with Image.open(p) as im:
             x = self.tf(im.convert("RGB"))
         return x, y
@@ -98,9 +153,92 @@ class ToyCNN(nn.Module):
         return self.fc(self.pool(self.f(x)).flatten(1))
 
 
+class OrigCNN(nn.Module):
+    """
+    The architecture from the original research notebooks, verbatim:
+    pigmentGAN/{original,synthesized}_dataset_CNN.ipynb.
+
+    Four Conv-ReLU-MaxPool blocks at 4/8/16/32 channels and a POSITION-SENSITIVE
+    flatten head, Linear(32*16*16, 2). ToyCNN differs on both counts -- wider
+    early channels and global average pooling -- so it is not the model that
+    produced the published Grad-CAMs. Kept separate rather than folded into
+    ToyCNN so the two remain independently runnable.
+    """
+
+    def __init__(self, n=2):
+        super().__init__()
+        ch, layers = 3, []
+        for out in (4, 8, 16, 32):
+            layers += [nn.Conv2d(ch, out, 3, 1, 1), nn.ReLU(), nn.MaxPool2d(2, 2)]
+            ch = out
+        self.f = nn.Sequential(*layers)
+        self.fc = nn.Linear(32 * 16 * 16, n)
+
+    def forward(self, x):
+        return self.fc(self.f(x).flatten(1))
+
+
+class _Basic(nn.Module):
+    """A pre-activation-free BasicBlock, ResNet-18's, at a fraction of the width."""
+
+    def __init__(self, c_in, c_out, stride=1):
+        super().__init__()
+        self.c1 = nn.Conv2d(c_in, c_out, 3, stride, 1, bias=False)
+        self.b1 = nn.BatchNorm2d(c_out)
+        self.c2 = nn.Conv2d(c_out, c_out, 3, 1, 1, bias=False)
+        self.b2 = nn.BatchNorm2d(c_out)
+        self.skip = nn.Sequential()
+        if stride != 1 or c_in != c_out:
+            self.skip = nn.Sequential(
+                nn.Conv2d(c_in, c_out, 1, stride, bias=False),
+                nn.BatchNorm2d(c_out))
+
+    def forward(self, x):
+        h = torch.relu(self.b1(self.c1(x)))
+        h = self.b2(self.c2(h))
+        return torch.relu(h + self.skip(x))
+
+
+class MicroResNet(nn.Module):
+    """
+    A residual network held under 100k parameters -- about 77k, against
+    ResNet-18's 11.2M and ToyCNN's 15k.
+
+    ToyCNN is a plain four-conv stack with no normalisation, and at 15k
+    parameters it settles on whatever the crudest class-correlated cue in the
+    frame happens to be. This keeps the "deliberately weakened" intent, since it
+    remains two orders of magnitude below the strong backbone, while restoring
+    the two things ToyCNN lacks: residual connections, so depth is usable, and
+    BatchNorm, whose absence is the likeliest source of ToyCNN's seed-to-seed
+    swing.
+    """
+
+    def __init__(self, n=2, widths=(16, 32, 64)):
+        super().__init__()
+        w0 = widths[0]
+        self.stem = nn.Sequential(
+            nn.Conv2d(3, w0, 3, 2, 1, bias=False),
+            nn.BatchNorm2d(w0), nn.ReLU(),
+            nn.MaxPool2d(2))
+        blocks, c = [], w0
+        for i, w in enumerate(widths):
+            blocks.append(_Basic(c, w, stride=1 if i == 0 else 2))
+            c = w
+        self.f = nn.Sequential(*blocks)
+        self.pool = nn.AdaptiveAvgPool2d(1)
+        self.fc = nn.Linear(c, n)
+
+    def forward(self, x):
+        return self.fc(self.pool(self.f(self.stem(x))).flatten(1))
+
+
 def build_model(name, device):
     if name == "toycnn":
         return ToyCNN().to(device)
+    if name == "microresnet":
+        return MicroResNet().to(device)
+    if name == "origcnn":
+        return OrigCNN().to(device)
     m = models.resnet18(weights="IMAGENET1K_V1")
     m.fc = nn.Linear(m.fc.in_features, 2)
     return m.to(device)
@@ -328,7 +466,7 @@ def main():
     ap.add_argument("--synth-leak-dir", default=None,
                     help="pool for 'synth_leak' (the contaminated generator)")
     ap.add_argument("--tag", default="legacy_v3")
-    ap.add_argument("--backbone", default="resnet18", choices=["resnet18", "toycnn"])
+    ap.add_argument("--backbone", default="resnet18", choices=["resnet18", "toycnn", "microresnet"])
     ap.add_argument("--seeds", type=int, default=5)
     ap.add_argument("--doses", type=float, nargs="*", default=None)
     ap.add_argument("--arms", nargs="*", default=None)
@@ -373,6 +511,14 @@ def main():
     for k, v in pools.items():
         if v:
             print(f"pool {k}: {len(v)}")
+
+    # Decode every image the sweep can touch, once, before any worker forks.
+    prefill_cache([p for p, _ in holdout_items]
+                  + [os.path.join(C.HEALTHY_DIR, f) for f in dev["Healthy"]]
+                  + [os.path.join(C.REAL_RP_DIR, f) for f in dev["RP"]]
+                  + [p for arm in arms if arm in POOL_ARMS
+                     for p in (pools.get(arm) or [])],
+                  workers=int(os.environ.get("S05_WORKERS", 16)) or 16)
     print()
 
     res = {"tag": a.tag, "backbone": a.backbone, "synth_dir": a.synth_dir,

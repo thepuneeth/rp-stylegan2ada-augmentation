@@ -1,227 +1,133 @@
-# Variability study
+# Evaluating StyleGAN2-ADA Augmentation for Retinitis Pigmentosa Fundus Images Using 111 Training Images
 
-**The prior study balanced an RP dataset with 885 synthetic images and reported
-AUC 0.89 -> 0.97. The gain was real. This study asks where it came from.**
+Code, splits, and result files for the paper accepted at the **IEEE BIBM 2026
+Undergraduate and High School Symposium (UGHS)**.
 
-> Scope is fixed by `config.py` and `docs/FINAL_PLAN.md`: **four arms, one new
-> generator, <=20 GPU-hours.** An earlier six-arm / eight-run / three-seed draft
-> is superseded — see *Dropped* below before reusing anything written against it.
+Retinitis Pigmentosa (RP) is rare, so diagnostic models for it are trained on
+very few images. This study fine-tunes StyleGAN2-ADA on 111 RP fundus images and
+measures what the synthetic images are worth to a diagnostic classifier, on a
+holdout of 28 RP eyes that the generator never saw.
 
----
+## Findings
 
-## The question, made testable
-
-Every arm trains on the same 111 real RP images and is scored on the same 28
-**generator-blind** eyes.
-
-| # | contrast | isolates | expectation | role |
+| condition (low-parameter classifier, 10x dose) | sensitivity | specificity | AUC | Brier |
 |---|---|---|---|---|
-| **P1** | **`synth_clean` vs `oversample`** | what the generator adds *beyond rebalancing* | small or null | **confirmatory** |
-| **P2** | **`synth_leak` vs `synth_clean`** | generator-mediated leakage: did training the generator on the holdout help | small or null | **confirmatory** |
-| S1 | `oversample` vs `real_only` | class balance alone | most of the prior gain | descriptive |
+| real-only | 0.521 | 1.000 | 0.9843 | 0.043 |
+| oversampled | **0.921** | 0.951 | 0.9922 | 0.039 |
+| clean-GAN | 0.629 | 0.998 | 0.9905 | 0.037 |
+| contaminated-GAN | 0.757 | 0.996 | 0.9930 | 0.025 |
 
-**P1 is the primary contrast** — the direct form of "does the GAN beat
-oversampling", which the prior work never asked and a reviewer asks first. P2
-tests whether a deliberately contaminated generator gains anything. Both are run
-by `s12_contrasts.py` with BCa cluster bootstrap and permutation; S1 is
-descriptive and carries no multiplicity correction.
+Eye-level, mean over five classifier seeds.
 
-### Why the prior result needs decomposing
+- **Synthetic images do not beat oversampling.** Eye-level AUC is near its
+  ceiling for every condition and shows no difference (clean-GAN minus
+  oversampled, +0.0004, p=0.94). On sensitivity, oversampling detects
+  significantly more RP eyes at every dose choice (p <= 0.017).
+- **A contaminated generator, trained on the holdout eyes on purpose, gains no
+  advantage that survives correction** under the low-parameter classifier. The
+  one significant cell (pretrained ResNet-18, 1.0x dose) rests on the rank of a
+  single RP eye that every ResNet-18 condition misclassifies.
+- **An ImageNet-pretrained ResNet-18 detects 26 of 28 RP eyes from the real
+  images alone**, so augmentation of either kind has little left to improve.
+- **With 28 RP eyes, no sensitivity difference below 0.21 can reach p < 0.05**,
+  and AUC has under 0.01 of headroom. The null results are bounds.
 
-Three problems, all readable in that paper's own methodology, none in its
-limitations:
+## Design
 
-1. **Synthetic images entered the validation folds.** They were merged into the
-   dataset *before* the 5-fold split, so ~177 of ~205 validation positives per
-   fold are synthetic images from a generator trained on the real positives.
-2. **Balancing changed two things at once** — adds synthetic data *and* corrects
-   a 7.4:1 class ratio. No oversampling arm to separate them.
+```
+139 RP images  -> 134 eyes (correlation clustering, complete linkage)
+               -> 111 development images (106 eyes) + 28 generator-blind holdout eyes
+1024 healthy   -> 817 development + 207 holdout images (197 eyes)
 
-### What makes this answerable
+g_clean  StyleGAN2-ADA, FFHQ-256 init, trained on the 111 development images
+g_leak   same recipe, 28 holdout + 83 development images (N matched at 111)
 
-**1. The holdout is generator-blind.** 139 real RP images (134 unique eyes)
-split eye-disjoint into 111 the generator trains on and **28 eyes no generator
-ever sees**. Any advantage measured there cannot be memorisation.
+classifier conditions  real-only | oversampled | clean-GAN | contaminated-GAN
+synthetic doses        0, 0.5, 1, 2, 5, 10x the 111 real RP images
+backbones              MicroResNet (~77k params, from scratch) | ResNet-18 (ImageNet init)
+```
 
-**2. Two generators, matched recipe.** `g_clean` never sees the holdout;
-`g_leak` is trained on 28 holdout eyes plus 83 dev eyes, N matched at 111, under
-a recipe identical to `g_clean` in 58 of 61 `training_options.json` keys. The
-pair separates evaluation-protocol leakage from generator-mediated leakage —
-whether training the generator itself on the holdout confers any advantage.
+Every metric is computed per **eye**, not per image. Contrasts use a BCa cluster
+bootstrap over eyes and a paired permutation test that swaps condition labels
+within an eye.
 
-## The arms
+- **P1**: clean-GAN vs oversampled. Does the generator add more than duplicating
+  the real RP images?
+- **P2**: contaminated-GAN vs clean-GAN. Does exposure to the holdout help?
 
-`config.ARMS`, in full:
+## Repository
 
-| arm | training set addition | role |
-|---|---|---|
-| `real_only` | -- | floor |
-| **`oversample`** | minority duplicated to balance | class balance, zero new pixels |
-| **`synth_clean`** | StyleGAN2-ADA (~2.5e7 params), ffhq256 -> 111 dev eyes | the generator as normally used |
-| `synth_leak` | the size-matched CONTAMINATED generator (28 holdout eyes swapped in) | opt-in, contrast P2; not in `config.ARMS` |
-
-Plus one historical row, **not an arm**: `legacy_v3`, the prior generator, which
-saw all 139 real RP including every evaluation eye. Labelled contaminated
-wherever it appears and supports no clean claim. Costs no GPU — already on disk.
-
-**n = 1 generator.** Sampling thousands of images from one checkpoint replicates
-*sampling*, not *training*, so this study cannot separate a real effect from a
-favourable initialization. The claim is scoped to "for a generator trained under
-the published protocol", stated in limitations rather than concealed by a large
-sample size. Generator-level replication is the first thing a follow-up buys.
-
-### Dropped
-
-| dropped | why |
+| path | contents |
 |---|---|
-| arm `synth_scratch` | StyleGAN2-ADA from random init on 111 images at 256px is noise at any budget reachable in 20 GPU-hours |
-| stage-2 fundus corpus pretrain | not what was achieved — v3 went ffhq256 -> RP directly. Deletes the 4,972-image download and the contamination audit |
-| the `train.py:313-315` patch | only mattered when one generator resumed and another did not. The single remaining generator resumes, so the `ada_kimg`/`ema_rampup` shift cancels |
-| generator seeds x3 | see n=1 above |
-| scarcity sweep | 28 blind eyes cannot resolve a curve |
+| `config.py` | every constant: paths, split sizes, doses, seeds, bootstrap counts |
+| `scripts/s00_verify.py` | integrity gate: split disjointness, size matching, hash checks |
+| `scripts/s01_unique_eyes.py` | eye identity by field-of-view correlation clustering |
+| `scripts/s02_make_splits.py` | eye-disjoint, generator-blind split |
+| `scripts/s04_prepare_gan_data.py` | builds the `clean_111` and `leak_111` training sets |
+| `scripts/s05_classifier.py` | the classifier sweep: conditions x doses x seeds, eye-level scoring |
+| `scripts/s07_power.py` | power simulation for the AUC contrast |
+| `scripts/s09_swd.py` | sliced Wasserstein distance against a real-to-real anchor |
+| `scripts/s10_figures.py`, `make_*_fig.py` | paper figures |
+| `scripts/s11_gradcam*.py` | Grad-CAM over the classifier conditions |
+| `scripts/s12_contrasts.py` | prespecified P1/P2 contrasts on AUC |
+| `scripts/s13_matched_grid.py` | matched sample grid, one holdout eye per column |
+| `scripts/s14_reviewer.py` | camera-ready analyses: secondary endpoints, fixed-dose P1, Holm across P2, calibration, stricter eye clustering |
+| `scripts/stats_boot.py` | BCa cluster bootstrap and permutation test, with a self-test |
+| `splits/` | eye labels, development / holdout split, folds |
+| `outputs/` | every result file the paper's numbers come from |
+| `figures/` | paper figures |
+| `provenance/` | GPU pod scripts and logs for generator sampling and metrics |
+| `docs/` | planning and audit history; superseded by the paper where they differ |
 
-**Generator-mediated leakage is measured here.** `g_leak` was trained on the
-28 holdout eyes plus 83 dev eyes, N matched at 111, under a recipe identical to
-`g_clean` in 58 of 61 `training_options.json` keys. At the distribution level
-the 2x2 cross-score is near-diagonal (F1), and the one snapshot where the
-generators diverge is a training instability the ADA augment trace identifies
-(F3). At the classifier level the arm exists as `synth_leak`, routed through
-`s05 --arms ... synth_leak --synth-leak-dir`; it is deliberately **not** in
-`config.ARMS`, because adding an arm after a sweep re-runs the sweep.
+Result files behind the paper:
 
----
+- `outputs/s05_classifier_micro5.json`: low-parameter classifier (Table I)
+- `outputs/s05_classifier_main5.json`: ResNet-18
+- `outputs/s05_classifier_toy5.json`: third backbone, robustness check only
+- `outputs/s12_contrasts*.json`: prespecified contrasts
+- `outputs/s14_reviewer.json`: Table II and Section III-D
+- `outputs/s07_power_base099.json`: power at the observed AUC
 
-## Status
+## Reproducing
 
-| step | state | result |
-|---|---|---|
-| s00 verification | **done** | all invariants pass, incl. hash self-test |
-| s01 unique eyes | **done** | 139 files = **134 eyes**; 1024 healthy = 963 |
-| s02 eye-disjoint split | **done** | 111 dev / **28 blind holdout**; prevalence matched to 4 decimals |
-| s04 GAN data prep | **done** | `clean_111.zip`, `leak_111.zip` |
-| GAN training | **done** (GPU) | `g_clean`, `g_leak`, RTX 4090, 3,000 kimg |
-| s05 classifier | **done** | 4 arms, eye-level; `outputs/s05_classifier_main5.json` |
-| s09 SWD | **done** | vs noise floor and real-to-real anchor |
-| s11 Grad-CAM | **done** | attention on the retina, above the disc-area null |
-| s12 contrasts | **done** | P1 + P2, BCa cluster bootstrap + permutation |
-| external RP test set | **blocked** | 6 images; needs human correspondence on someone else's timetable |
-
-Snapshot selection ran offline on downloaded snapshots: lowest **KID**
-(`config.SELECT_METRIC = kid50k_full`) among snapshots >= `SELECT_MIN_KIMG`,
-ties to the earlier snapshot. KID rather than FID because FID's bias grows as
-the reference set shrinks and this one is 111 images.
-
----
-
-## Running anything
-
-Scripts need `torch`, `sklearn`, `scipy`, `PIL`. The system `python3` has only
-some of them; the project virtualenv has all of them:
+Data is not redistributed. Download the **Eye Disease Image Dataset**
+(T. Khatun, Mendeley Data, V1, 2024) and place it so that
+`Eye Disease Image Dataset/Original Dataset/Retinitis Pigmentosa/` and
+`.../Healthy/` exist at the repository root.
 
 ```bash
-cd variability_study
-../venv/bin/python scripts/s00_verify.py      # 20 invariants, read-only
-../venv/bin/python scripts/common.py          # shared-primitive selftest
+pip install -r requirements.txt
+python scripts/s01_unique_eyes.py
+python scripts/s02_make_splits.py
+python scripts/s00_verify.py
 ```
 
-`scripts/` is on `sys.path` when a script is run directly, so `from common
-import C, ...` resolves without a path hack.
+Generator training needs a GPU and
+[NVlabs/stylegan2-ada-pytorch](https://github.com/NVlabs/stylegan2-ada-pytorch)
+placed at `stylegan2-ada-pytorch-main/`. The recipe is in
+`docs/RUNPOD_RECIPE.md`. Network snapshots (about 5.7 GB) are not included.
 
-## Layout
+Everything after the classifier sweep runs on CPU from the stored per-eye
+probabilities:
 
-```
-config.py                     single source of truth; every constant is justified in place
-scripts/
-  common.py                   fov_crop, corr_features, list_images + selftest  <-- shared
-  s00_verify.py               invariants over splits, zips and hashes
-  s01_unique_eyes.py          eye identity via FOV-crop correlation + complete linkage
-  s02_make_splits.py          eye-disjoint holdout, assertion-guarded
-  s04_prepare_gan_data.py     clean/leak image folders
-  s05_classifier.py           downstream arms on the blind holdout
-  s09_swd.py                  sliced Wasserstein distance, real-pixel realism check
-  s10_figures.py              paper figures
-  s11_gradcam.py              attention check: is the model on the retina?
-  s12_contrasts.py            P1 + P2, BCa cluster bootstrap + permutation
-  stats_boot.py               BCa cluster bootstrap + permutation helpers
-splits/     eye_labels.json, holdout.json, dev.json, dev_folds.json
-gan_data/   clean_111.zip, leak_111.zip   (gitignored; regenerate with s04)
-outputs/    every result as JSON
-docs/
-  FINAL_PLAN.md         the design of record — arms, budget, endpoints
-  AUDIT_LOG.md          what was checked, what failed, what changed  <-- read this
-  RUNPOD_RECIPE.md      GPU commands, snapshot integrity, the numbers to beat
-  METHODS_NARRATIVE.md  audit of record + manuscript prose
-  PRETRAIN_CORPUS.md    stage-2 licensing. SUPERSEDED — stage 2 is dropped
+```bash
+python scripts/s12_contrasts.py
+python scripts/s14_reviewer.py --alt-eyes 0.985    # about 15 min
+python scripts/s07_power.py --base 0.99 --deltas 0.0 0.002 0.004 0.006 0.009
 ```
 
-`common.py` exists because `fov_crop` and the correlation feature were copied
-across scripts. Any distance compared to the duplicate threshold is only
-comparable if that feature is byte-identical, so one definition makes it
-structural. Verified behaviour-preserving: s01 re-run after the extraction
-reproduces `outputs/s01_unique_eyes.json` and `splits/eye_labels.json`
-byte-for-byte.
+`RUNBOOK.md` has the full step-by-step pipeline. Everything is deterministic
+under `config.SEED = 42`.
 
----
+## Citation
 
-## An error caught during setup
-
-Recorded because it would have produced a wrong paper, and it was caught by
-checking rather than by assuming.
-
-**The duplicate audit was an artifact.** The earlier
-`corrected_experiments/outputs/duplicate_audit.json` reported 132 exact aHash
-collisions and grounded an "effective-N collapse" claim. aHash reduces an image
-to an 8x8 binary pattern and collides trivially across same-modality images.
-Under a metric calibrated to recover five independently confirmed duplicate
-pairs with zero false positives, real duplication is **5 pairs among 139 images
-(3.6%)**. Effective N is 134, not a collapsed number. **"Effective-N collapse"
-is withdrawn as a claim.**
-
----
-
-## Why this survives every outcome
-
-No paper should depend on a result that cannot be guaranteed:
-
-| outcome | headline |
-|---|---|
-| **`synth_clean` ~= `oversample`** | the reported benefit is rebalancing plus evaluation contamination |
-| **`synth_clean` > `oversample`** | the generator adds real information beyond rebalancing, against the control that would have explained it away |
-| **`synth_clean` < `oversample`** | synthetic augmentation is actively worse than duplication in this regime |
-| **inconclusive** | reported as such, scoped to what 28 blind eyes can resolve |
-
-Non-significance is not equivalence. Claiming "`synth_clean` ~= `oversample`"
-requires a prespecified equivalence margin, set from the seed-to-seed spread of
-the `oversample` arm before any `synth_clean` result is read.
-
----
-
-## Next actions
-
-The pipeline is complete: both generators trained, `s05` swept over four arms,
-`s09`/`s11`/`s12` run. The only open item is the **external RP test set** (6
-images, blocked on human correspondence).
-
-See `docs/FINAL_PLAN.md` for the full design and prior-work positioning.
-
----
-
-## Runtime
-
-Measured on MPS, per classifier training run (30 epochs, ~930-1,630 images):
-
-| backbone | per run | full sweep |
-|---|---|---|
-| `toycnn` | ~6 min | ~5 h |
-| `resnet18` | ~25 min | ~21 h |
-
-Use `--epochs 2 --backbone toycnn` to smoke-test the harness in ~90 s; those
-numbers are not results.
-
-GAN training, measured on this project's own `training-runs/*/stats.jsonl` and
-not estimated: **21.7 sec/kimg** on the gamma=5 / ADA target=0.6 / freezed=0
-recipe, so 3,000 kimg is ~18.1 hours on one Ampere-class GPU. FID50k_full by
-cumulative kimg was 49.58 @ 1983, 46.85 @ 3031, 41.69 @ 3806 (best),
-43.01 @ 4293 (worse). **FID here is a monitoring signal, not an endpoint** — it
-is computed against only 139 reals, so it is valid as a within-run trend and
-meaningless as an absolute number.
+```bibtex
+@inproceedings{pradeep2026rpstylegan,
+  title     = {Evaluating {StyleGAN2-ADA} Augmentation for Retinitis Pigmentosa
+               Fundus Images Using 111 Training Images},
+  author    = {Pradeep, Puneeth},
+  booktitle = {IEEE International Conference on Bioinformatics and Biomedicine
+               (BIBM) Workshops, Undergraduate and High School Symposium},
+  year      = {2026}
+}
+```

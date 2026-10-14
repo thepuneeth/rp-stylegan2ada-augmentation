@@ -1,0 +1,46 @@
+{
+  "reals": [
+    "/Users/puneeth/Documents/Research/GAN/pigmentTruthGAN/Eye Disease Image Dataset/Original Dataset/Retinitis Pigmentosa/Retinitis Pigmentosa104.jpg",
+    "/Users/puneeth/Documents/Research/GAN/pigmentTruthGAN/Eye Disease Image Dataset/Original Dataset/Retinitis Pigmentosa/Retinitis Pigmentosa106.jpg",
+    "/Users/puneeth/Documents/Research/GAN/pigmentTruthGAN/Eye Disease Image Dataset/Original Dataset/Retinitis Pigmentosa/Retinitis Pigmentosa107.jpg",
+    "/Users/puneeth/Documents/Research/GAN/pigmentTruthGAN/Eye Disease Image Dataset/Original Dataset/Retinitis Pigmentosa/Retinitis Pigmentosa108.jpg",
+    "/Users/puneeth/Documents/Research/GAN/pigmentTruthGAN/Eye Disease Image Dataset/Original Dataset/Retinitis Pigmentosa/Retinitis Pigmentosa110.jpg",
+    "/Users/puneeth/Documents/Research/GAN/pigmentTruthGAN/Eye Disease Image Dataset/Original Dataset/Retinitis Pigmentosa/Retinitis Pigmentosa111.jpg"
+  ],
+  "picks": {
+    "clean-GAN": [
+      "/Users/puneeth/Documents/Research/GAN/pigmentTruthGAN/gan_data/synth_clean_psi1.0/seed1028.png",
+      "/Users/puneeth/Documents/Research/GAN/pigmentTruthGAN/gan_data/synth_clean_psi1.0/seed0986.png",
+      "/Users/puneeth/Documents/Research/GAN/pigmentTruthGAN/gan_data/synth_clean_psi1.0/seed0146.png",
+      "/Users/puneeth/Documents/Research/GAN/pigmentTruthGAN/gan_data/synth_clean_psi1.0/seed0347.png",
+      "/Users/puneeth/Documents/Research/GAN/pigmentTruthGAN/gan_data/synth_clean_psi1.0/seed0215.png",
+      "/Users/puneeth/Documents/Research/GAN/pigmentTruthGAN/gan_data/synth_clean_psi1.0/seed1049.png"
+    ],
+    "contaminated-GAN": [
+      "/Users/puneeth/Documents/Research/GAN/pigmentTruthGAN/gan_data/synth_leak_psi1.0/seed0590.png",
+      "/Users/puneeth/Documents/Research/GAN/pigmentTruthGAN/gan_data/synth_leak_psi1.0/seed0840.png",
+      "/Users/puneeth/Documents/Research/GAN/pigmentTruthGAN/gan_data/synth_leak_psi1.0/seed1048.png",
+      "/Users/puneeth/Documents/Research/GAN/pigmentTruthGAN/gan_data/synth_leak_psi1.0/seed0670.png",
+      "/Users/puneeth/Documents/Research/GAN/pigmentTruthGAN/gan_data/synth_leak_psi1.0/seed0997.png",
+      "/Users/puneeth/Documents/Research/GAN/pigmentTruthGAN/gan_data/synth_leak_psi1.0/seed0736.png"
+    ]
+  },
+  "cosine": {
+    "clean-GAN": [
+      0.8839694857597351,
+      0.9031186103820801,
+      0.8714852929115295,
+      0.9119183421134949,
+      0.901931881904602,
+      0.9051138162612915
+    ],
+    "contaminated-GAN": [
+      0.8846644759178162,
+      0.9079294204711914,
+      0.8866013288497925,
+      0.934421956539154,
+      0.9221304059028625,
+      0.9130169749259949
+    ]
+  }
+}

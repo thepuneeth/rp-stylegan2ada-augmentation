@@ -30,7 +30,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import config as C
 from scripts.stats_boot import bca_ci
 
-RES = os.path.join(C.OUT, "s05_classifier_main5.json")
+RES = os.environ.get("S12_RES", os.path.join(C.OUT, "s05_classifier_main5.json"))
 
 
 def holdout_eye_index():
@@ -124,7 +124,7 @@ def main():
         star = " *" if r["p_perm"] < 0.05 else ""
         print(f"{name:44}{r['delta_auc']:>+9.4f}{ci:>22}{r['p_perm']:>9.4f}{star}")
 
-    dest = os.path.join(C.OUT, "s12_contrasts.json")
+    dest = os.environ.get("S12_OUT", os.path.join(C.OUT, "s12_contrasts.json"))
     json.dump({"eval_unit": "eye", "n_eyes": len(y_eye),
                "n_boot": C.BOOTSTRAP_N, "contrasts": out}, open(dest, "w"), indent=1)
     print(f"\nwrote {dest}")
